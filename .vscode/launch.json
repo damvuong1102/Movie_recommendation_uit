@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-MovieRecommendationApplication<movie-recommendation>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.movieapp.recommendation.MovieRecommendationApplication",
+            "projectName": "movie-recommendation",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

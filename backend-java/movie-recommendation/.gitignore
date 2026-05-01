@@ -1,0 +1,31 @@
+HELP.md
+
+# Build outputs
+target/
+build/
+
+# Keep Maven wrapper files tracked
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
+
+# STS / Eclipse
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
+
+# IntelliJ
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# VS Code
+.vscode/
