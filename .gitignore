@@ -1,0 +1,55 @@
+# ==========================================
+# OS / Editor
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.tmp
+*.bak
+*.code-workspace
+
+# ==========================================
+# IDE
+# ==========================================
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.vscode/
+.eclipse/
+.classpath
+.project
+.settings/
+bin/
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# ==========================================
+# Java / Maven / Spring
+# ==========================================
+**/target/
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+replay_pid*
+*.log
+logs/
+spring-shell.log
+
+# ==========================================
+# Environment / Secrets
+# ==========================================
+.env
+.env.*
+*.env
+*.env.*
+application-local.properties
+application-secret.properties
+**/application-prod.properties
+**/application-*.local.properties
