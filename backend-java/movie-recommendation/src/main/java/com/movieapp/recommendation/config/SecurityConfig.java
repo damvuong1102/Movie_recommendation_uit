@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/movies/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/movies").permitAll()
+                .requestMatchers(HttpMethod.GET, "/genres").permitAll()
 
                 // ── Protected endpoints ──────────────────────────
                 .requestMatchers("/ratings/**").authenticated()

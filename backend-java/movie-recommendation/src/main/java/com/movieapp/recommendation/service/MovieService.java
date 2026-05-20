@@ -19,9 +19,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 @Service
@@ -60,17 +65,98 @@ public class MovieService {
     }
 
     public Page<MovieSummaryResult> findTopRated(long minRatings, Pageable pageable) {
+        return findTopRated(minRatings, null, pageable);
+    }
+
+    public Page<MovieSummaryResult> findTopRated(long minRatings, String genre, Pageable pageable) {
         return findRankedMovies(
-                "WHERE COALESCE(m.ratingCount, 0) >= :minRatings ORDER BY COALESCE(m.avgRating, 0) DESC, COALESCE(m.ratingCount, 0) DESC",
+                "ORDER BY COALESCE(m.avgRating, 0) DESC, COALESCE(m.ratingCount, 0) DESC",
+                genre,
                 minRatings,
                 pageable);
     }
 
     public Page<MovieSummaryResult> findTrending(long minRatings, Pageable pageable) {
+        return findTrending(minRatings, null, pageable);
+    }
+
+    public Page<MovieSummaryResult> findTrending(long minRatings, String genre, Pageable pageable) {
         return findRankedMovies(
-                "WHERE COALESCE(m.ratingCount, 0) >= :minRatings ORDER BY COALESCE(m.popularity, 0) DESC, COALESCE(m.ratingCount, 0) DESC",
+                "ORDER BY COALESCE(m.popularity, 0) DESC, COALESCE(m.ratingCount, 0) DESC",
+                genre,
                 minRatings,
                 pageable);
+    }
+
+    public Page<MovieSummaryResult> findRecommended(Long userId, long minRatings, Pageable pageable) {
+        return findRecommended(userId, minRatings, null, pageable);
+    }
+
+    public Page<MovieSummaryResult> findRecommended(Long userId, long minRatings, String genre, Pageable pageable) {
+        if (userId == null) {
+            return findTopRated(minRatings, genre, pageable);
+        }
+
+        List<String> favoriteGenres = findFavoriteGenres(userId);
+        if (favoriteGenres.isEmpty()) {
+            return findTopRated(minRatings, genre, pageable);
+        }
+
+        StringBuilder whereClause = new StringBuilder("""
+                WHERE COALESCE(m.ratingCount, 0) >= :minRatings
+                AND NOT EXISTS (
+                    SELECT 1 FROM Rating rated
+                    WHERE rated.user.id = :userId AND rated.movie = m
+                )
+                """);
+        Map<String, Object> params = new HashMap<>();
+        params.put("minRatings", Math.max(minRatings, 0));
+        params.put("userId", userId);
+
+        if (StringUtils.hasText(genre)) {
+            whereClause.append(" AND LOWER(m.genres) LIKE LOWER(:selectedGenre)");
+            params.put("selectedGenre", "%" + genre.trim() + "%");
+        }
+
+        whereClause.append(" AND (");
+        for (int i = 0; i < favoriteGenres.size(); i++) {
+            if (i > 0) {
+                whereClause.append(" OR ");
+            }
+            String paramName = "genre" + i;
+            whereClause.append("LOWER(m.genres) LIKE LOWER(:").append(paramName).append(")");
+            params.put(paramName, "%" + favoriteGenres.get(i) + "%");
+        }
+
+        whereClause.append(") ORDER BY COALESCE(m.avgRating, 0) DESC, COALESCE(m.ratingCount, 0) DESC");
+
+        List<Movie> movies = createMovieQuery("SELECT m FROM Movie m " + whereClause, params)
+                .setFirstResult((int) pageable.getOffset())
+                .setMaxResults(pageable.getPageSize())
+                .getResultList();
+
+        Long total = createCountQuery("SELECT COUNT(m) FROM Movie m " + whereClause.substring(0, whereClause.indexOf(" ORDER BY")), params)
+                .getSingleResult();
+
+        if (total == 0) {
+            return findTopRated(minRatings, genre, pageable);
+        }
+
+        return new PageImpl<>(movies.stream().map(MovieSummaryResult::from).toList(), pageable, total);
+    }
+
+    public List<String> findGenres() {
+        List<String> genreValues = entityManager.createQuery(
+                        "SELECT DISTINCT m.genres FROM Movie m WHERE m.genres IS NOT NULL AND TRIM(m.genres) <> ''",
+                        String.class)
+                .getResultList();
+
+        return genreValues.stream()
+                .flatMap(value -> splitGenres(value).stream())
+                .collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)))
+                .stream()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
     }
 
     public MovieDetailResult getMovie(Long id) {
@@ -105,22 +191,50 @@ public class MovieService {
         return MovieDetailResult.from(tmdbMovie);
     }
 
-    private Page<MovieSummaryResult> findRankedMovies(String whereAndOrderClause, long minRatings, Pageable pageable) {
-        List<Movie> movies = entityManager.createQuery(
-                        "SELECT m FROM Movie m " + whereAndOrderClause,
-                        Movie.class)
-                .setParameter("minRatings", Math.max(minRatings, 0))
+    private Page<MovieSummaryResult> findRankedMovies(String orderClause, String genre, long minRatings, Pageable pageable) {
+        StringBuilder whereClause = new StringBuilder("WHERE COALESCE(m.ratingCount, 0) >= :minRatings");
+        Map<String, Object> params = new HashMap<>();
+        params.put("minRatings", Math.max(minRatings, 0));
+
+        if (StringUtils.hasText(genre)) {
+            whereClause.append(" AND LOWER(m.genres) LIKE LOWER(:genre)");
+            params.put("genre", "%" + genre.trim() + "%");
+        }
+
+        List<Movie> movies = createMovieQuery(
+                        "SELECT m FROM Movie m " + whereClause + " " + orderClause,
+                        params)
                 .setFirstResult((int) pageable.getOffset())
                 .setMaxResults(pageable.getPageSize())
                 .getResultList();
 
-        Long total = entityManager.createQuery(
-                        "SELECT COUNT(m) FROM Movie m WHERE COALESCE(m.ratingCount, 0) >= :minRatings",
-                        Long.class)
-                .setParameter("minRatings", Math.max(minRatings, 0))
+        Long total = createCountQuery(
+                        "SELECT COUNT(m) FROM Movie m " + whereClause,
+                        params)
                 .getSingleResult();
 
         return new PageImpl<>(movies.stream().map(MovieSummaryResult::from).toList(), pageable, total);
+    }
+
+    private List<String> findFavoriteGenres(Long userId) {
+        List<String> ratedGenres = entityManager.createQuery("""
+                        SELECT r.movie.genres
+                        FROM Rating r
+                        WHERE r.user.id = :userId
+                        AND r.movie.genres IS NOT NULL
+                        AND r.rating >= 3.5
+                        ORDER BY r.rating DESC, r.updatedAt DESC
+                        """, String.class)
+                .setParameter("userId", userId)
+                .setMaxResults(20)
+                .getResultList();
+
+        Set<String> genres = new LinkedHashSet<>();
+        for (String ratedGenre : ratedGenres) {
+            genres.addAll(splitGenres(ratedGenre));
+        }
+
+        return new ArrayList<>(genres);
     }
 
     private TypedQuery<Movie> createMovieQuery(String jpql, Map<String, Object> params) {
@@ -179,6 +293,23 @@ public class MovieService {
                 .collect(Collectors.joining(", "));
 
         return StringUtils.hasText(value) ? value : null;
+    }
+
+    private static List<String> splitGenres(String genres) {
+        if (!StringUtils.hasText(genres)) {
+            return List.of();
+        }
+
+        String normalized = genres
+                .replace("[", "")
+                .replace("]", "")
+                .replace("\"", "");
+
+        return Arrays.stream(normalized.split("[|,]"))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .distinct()
+                .toList();
     }
 
     public record MovieSummaryResult(
