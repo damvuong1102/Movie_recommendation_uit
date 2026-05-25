@@ -40,6 +40,7 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // ── Public endpoints ─────────────────────────────
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/movies/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/movies").permitAll()
