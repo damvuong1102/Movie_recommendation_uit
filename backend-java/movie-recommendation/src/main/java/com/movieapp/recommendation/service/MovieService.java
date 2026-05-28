@@ -182,6 +182,27 @@ public class MovieService {
         }
     }
 
+    public List<MovieSummaryResult> findSummariesByIds(List<Long> movieIds) {
+        if (movieIds == null || movieIds.isEmpty()) {
+            return List.of();
+        }
+
+        List<Movie> movies = entityManager.createQuery(
+                        "SELECT m FROM Movie m WHERE m.id IN :movieIds",
+                        Movie.class)
+                .setParameter("movieIds", movieIds)
+                .getResultList();
+
+        Map<Long, Movie> moviesById = movies.stream()
+                .collect(Collectors.toMap(Movie::getId, movie -> movie));
+
+        return movieIds.stream()
+                .map(moviesById::get)
+                .filter(movie -> movie != null)
+                .map(movie -> enrichWithTmdb(MovieSummaryResult.from(movie), movie.getTmdbId()))
+                .toList();
+    }
+
     private MovieDetailResult getMovieFromTmdb(Long tmdbId) {
         TmdbMovieAssets tmdbMovie = fetchTmdbMovie(tmdbId);
         if (tmdbMovie == null) {
@@ -262,6 +283,19 @@ public class MovieService {
         return movie.withTmdbFallback(tmdbMovie);
     }
 
+    private MovieSummaryResult enrichWithTmdb(MovieSummaryResult movie, Long tmdbId) {
+        if (tmdbId == null) {
+            return movie;
+        }
+
+        TmdbMovieAssets tmdbMovie = fetchTmdbMovie(tmdbId);
+        if (tmdbMovie == null) {
+            return movie;
+        }
+
+        return movie.withTmdbFallback(tmdbMovie);
+    }
+
     private TmdbMovieAssets fetchTmdbMovie(Long tmdbId) {
         if (tmdbId == null || tmdbId <= 0) {
             return null;
@@ -282,7 +316,7 @@ public class MovieService {
         return preferred != null ? preferred : fallback;
     }
 
-    private static String genreNames(List<TmdbGenre> genres) {
+    public static String genreNames(List<TmdbGenre> genres) {
         if (genres == null || genres.isEmpty()) {
             return null;
         }
@@ -333,6 +367,18 @@ public class MovieService {
                     releaseDate == null ? null : releaseDate.getYear(),
                     movie.getAvgRating(),
                     movie.getRatingCount());
+        }
+
+        private MovieSummaryResult withTmdbFallback(TmdbMovieAssets movie) {
+            return new MovieSummaryResult(
+                    id,
+                    tmdbId,
+                    firstText(title, movie.title()),
+                    firstText(posterUrl, movie.posterUrl()),
+                    firstText(genres, genreNames(movie.genres())),
+                    releaseYear != null || movie.releaseDate() == null ? releaseYear : movie.releaseDate().getYear(),
+                    avgRating,
+                    ratingCount);
         }
     }
 
