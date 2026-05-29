@@ -61,7 +61,7 @@ public class MovieService {
 
         Long total = createCountQuery(countJpql, params).getSingleResult();
 
-        return new PageImpl<>(movies.stream().map(MovieSummaryResult::from).toList(), pageable, total);
+        return toSummaryPage(movies, pageable, total);
     }
 
     public Page<MovieSummaryResult> findTopRated(long minRatings, Pageable pageable) {
@@ -142,7 +142,7 @@ public class MovieService {
             return findTopRated(minRatings, genre, pageable);
         }
 
-        return new PageImpl<>(movies.stream().map(MovieSummaryResult::from).toList(), pageable, total);
+        return toSummaryPage(movies, pageable, total);
     }
 
     public List<String> findGenres() {
@@ -234,7 +234,7 @@ public class MovieService {
                         params)
                 .getSingleResult();
 
-        return new PageImpl<>(movies.stream().map(MovieSummaryResult::from).toList(), pageable, total);
+        return toSummaryPage(movies, pageable, total);
     }
 
     private List<String> findFavoriteGenres(Long userId) {
@@ -306,6 +306,23 @@ public class MovieService {
         } catch (IllegalStateException | TmdbClientException ex) {
             return null;
         }
+    }
+
+    private Page<MovieSummaryResult> toSummaryPage(List<Movie> movies, Pageable pageable, long total) {
+        List<MovieSummaryResult> summaries = movies.stream()
+                .map(MovieSummaryResult::from)
+                .map(this::enrichSummaryWhenNeeded)
+                .toList();
+
+        return new PageImpl<>(summaries, pageable, total);
+    }
+
+    private MovieSummaryResult enrichSummaryWhenNeeded(MovieSummaryResult movie) {
+        if (StringUtils.hasText(movie.posterUrl()) || movie.tmdbId() == null || !tmdbApiClient.isAuthenticationConfigured()) {
+            return movie;
+        }
+
+        return enrichWithTmdb(movie, movie.tmdbId());
     }
 
     private static String firstText(String preferred, String fallback) {
