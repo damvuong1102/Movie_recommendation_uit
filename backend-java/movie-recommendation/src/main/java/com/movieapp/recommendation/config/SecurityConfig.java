@@ -41,10 +41,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // ── Public endpoints ─────────────────────────────
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/", "/error").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/movies/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/movies").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/genres").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/recommendations/**").permitAll()
 
                 // ── Protected endpoints ──────────────────────────
                 .requestMatchers("/api/ratings/**").authenticated()
