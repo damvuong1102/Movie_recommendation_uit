@@ -50,6 +50,7 @@ public class SecurityConfig {
 
                 // ── Protected endpoints ──────────────────────────
                 .requestMatchers("/api/ratings/**").authenticated()
+                .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/users/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 

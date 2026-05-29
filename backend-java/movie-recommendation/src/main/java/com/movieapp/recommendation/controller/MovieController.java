@@ -47,9 +47,9 @@ public class MovieController {
         return ResponseEntity.ok(ApiResponse.ok(PageResponse.from(movies)));
     }
 
-    @GetMapping("/movies/{id}")
-    public ResponseEntity<ApiResponse<MovieService.MovieDetailResult>> getMovie(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(movieService.getMovie(id)));
+    @GetMapping("/movies/{tmdbId}")
+    public ResponseEntity<ApiResponse<MovieService.MovieDetailResult>> getMovie(@PathVariable Long tmdbId) {
+        return ResponseEntity.ok(ApiResponse.ok(movieService.getMovieByTmdbId(tmdbId)));
     }
 
     @GetMapping("/movies/tmdb/{tmdbId}")
