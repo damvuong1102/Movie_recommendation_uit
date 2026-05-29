@@ -19,6 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
@@ -28,22 +29,27 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource))
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // ── Public endpoints ─────────────────────────────
-                .requestMatchers("/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/movies/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/movies").permitAll()
-                .requestMatchers(HttpMethod.GET, "/genres").permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers("/", "/error").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/movies/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/movies").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/genres").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/recommendations/**").permitAll()
 
                 // ── Protected endpoints ──────────────────────────
-                .requestMatchers("/ratings/**").authenticated()
+                .requestMatchers("/api/ratings/**").authenticated()
                 .requestMatchers("/users/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
