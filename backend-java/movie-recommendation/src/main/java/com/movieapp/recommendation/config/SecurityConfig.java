@@ -41,15 +41,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // ── Public endpoints ─────────────────────────────
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/movies/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/movies/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/movies").permitAll()
-                .requestMatchers(HttpMethod.GET, "/genres").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/movies").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/genres").permitAll()
 
                 // ── Protected endpoints ──────────────────────────
-                .requestMatchers("/ratings/**").authenticated()
+                .requestMatchers("/api/ratings/**").authenticated()
                 .requestMatchers("/users/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 

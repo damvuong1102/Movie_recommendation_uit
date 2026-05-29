@@ -19,7 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/ratings")
+@RequestMapping("/api/ratings")
 @RequiredArgsConstructor
 public class RatingController {
 
