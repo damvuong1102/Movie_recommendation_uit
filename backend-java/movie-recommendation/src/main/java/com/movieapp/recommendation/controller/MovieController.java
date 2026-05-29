@@ -33,7 +33,7 @@ public class MovieController {
             @RequestParam(required = false) String type,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
-            @RequestParam(defaultValue = "1") @Min(0) long minRatings,
+            @RequestParam(defaultValue = "0") @Min(0) long minRatings,
             @AuthenticationPrincipal User user) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
