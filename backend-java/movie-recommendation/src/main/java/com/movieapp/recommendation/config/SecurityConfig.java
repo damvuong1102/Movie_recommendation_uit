@@ -42,7 +42,9 @@ public class SecurityConfig {
                 // ── Public endpoints ─────────────────────────────
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/auth/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/movies/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/movies/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/movies").permitAll()
                 .requestMatchers(HttpMethod.GET, "/genres").permitAll()
 
