@@ -3,6 +3,7 @@ HELP.md
 # Build outputs
 target/
 build/
+data/
 
 # Keep Maven wrapper files tracked
 !.mvn/wrapper/maven-wrapper.jar

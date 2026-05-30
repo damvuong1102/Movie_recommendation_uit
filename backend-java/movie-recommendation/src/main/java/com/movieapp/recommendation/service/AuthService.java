@@ -1,9 +1,8 @@
 package com.movieapp.recommendation.service;
 
 import com.movieapp.recommendation.entity.User;
+import com.movieapp.recommendation.repositories.UserRepository;
 import com.movieapp.recommendation.security.JwtService;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.NoResultException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,18 +19,18 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final EntityManager entityManager;
+    private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     @Transactional
     public AuthResult register(String username, String email, String password, String displayName) {
-        if (existsByUsername(username)) {
+        if (userRepository.existsByUsernameIgnoreCase(username)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already exists");
         }
 
-        if (existsByEmail(email)) {
+        if (userRepository.existsByEmailIgnoreCase(email)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already exists");
         }
 
@@ -44,10 +43,9 @@ public class AuthService {
                 .active(true)
                 .build();
 
-        entityManager.persist(user);
-        entityManager.flush();
+        User savedUser = userRepository.saveAndFlush(user);
 
-        return buildAuthResult(user);
+        return buildAuthResult(savedUser);
     }
 
     @Transactional(readOnly = true)
@@ -59,7 +57,10 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password", ex);
         }
 
-        User user = findByUsername(username);
+        User user = userRepository.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Invalid username or password"));
         return buildAuthResult(user);
     }
 
@@ -69,38 +70,6 @@ public class AuthService {
                 jwtService.generateRefreshToken(user),
                 jwtService.getExpirationMs() / 1000,
                 UserResult.from(user));
-    }
-
-    private boolean existsByUsername(String username) {
-        Long count = entityManager.createQuery(
-                        "SELECT COUNT(u) FROM User u WHERE LOWER(u.username) = LOWER(:username)",
-                        Long.class)
-                .setParameter("username", username)
-                .getSingleResult();
-
-        return count > 0;
-    }
-
-    private boolean existsByEmail(String email) {
-        Long count = entityManager.createQuery(
-                        "SELECT COUNT(u) FROM User u WHERE LOWER(u.email) = LOWER(:email)",
-                        Long.class)
-                .setParameter("email", email)
-                .getSingleResult();
-
-        return count > 0;
-    }
-
-    private User findByUsername(String username) {
-        try {
-            return entityManager.createQuery(
-                            "SELECT u FROM User u WHERE u.username = :username",
-                            User.class)
-                    .setParameter("username", username)
-                    .getSingleResult();
-        } catch (NoResultException ex) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid username or password", ex);
-        }
     }
 
     public record AuthResult(
