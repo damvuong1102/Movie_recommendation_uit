@@ -91,6 +91,10 @@ public class TmdbApiClient {
         return "https://image.tmdb.org/t/p/" + normalizedSize + normalizedPath;
     }
 
+    public boolean isAuthenticationConfigured() {
+        return bearerAuthEnabled || StringUtils.hasText(apiKey);
+    }
+
     private <T> T get(UriComponentsBuilder uriBuilder, Class<T> responseType) {
         ensureAuthenticationConfigured();
 

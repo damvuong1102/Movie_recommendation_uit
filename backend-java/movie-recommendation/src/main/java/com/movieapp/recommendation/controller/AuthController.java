@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,27 +16,33 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         AuthService.AuthResult result = authService.register(
                 request.username(),
                 request.email(),
                 request.password(),
                 request.displayName());
 
-        return ResponseEntity.ok(AuthResponse.from(result));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.ok("Registration successful", AuthResponse.from(result)));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         AuthService.AuthResult result = authService.login(request.username(), request.password());
-        return ResponseEntity.ok(AuthResponse.from(result));
+        return ResponseEntity.ok(ApiResponse.ok(AuthResponse.from(result)));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout() {
+        return ResponseEntity.ok(ApiResponse.ok("Logged out successfully", null));
     }
 
     public record LoginRequest(
@@ -97,7 +104,22 @@ public class AuthController {
                     user.displayName(),
                     user.avatarUrl(),
                     user.role(),
-                    user.createdAt());
+                user.createdAt());
+        }
+    }
+
+    public record ApiResponse<T>(
+            boolean success,
+            String message,
+            T data,
+            LocalDateTime timestamp) {
+
+        private static <T> ApiResponse<T> ok(T data) {
+            return new ApiResponse<>(true, null, data, LocalDateTime.now());
+        }
+
+        private static <T> ApiResponse<T> ok(String message, T data) {
+            return new ApiResponse<>(true, message, data, LocalDateTime.now());
         }
     }
 }

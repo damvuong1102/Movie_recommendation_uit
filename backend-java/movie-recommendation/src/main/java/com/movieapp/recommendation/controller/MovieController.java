@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
+@RequestMapping("/api")
 @RequiredArgsConstructor
 public class MovieController {
 
@@ -31,7 +33,7 @@ public class MovieController {
             @RequestParam(required = false) String type,
             @RequestParam(defaultValue = "0") @Min(0) int page,
             @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size,
-            @RequestParam(defaultValue = "1") @Min(0) long minRatings,
+            @RequestParam(defaultValue = "0") @Min(0) long minRatings,
             @AuthenticationPrincipal User user) {
 
         PageRequest pageRequest = PageRequest.of(page, size);
@@ -45,9 +47,9 @@ public class MovieController {
         return ResponseEntity.ok(ApiResponse.ok(PageResponse.from(movies)));
     }
 
-    @GetMapping("/movies/{id}")
-    public ResponseEntity<ApiResponse<MovieService.MovieDetailResult>> getMovie(@PathVariable Long id) {
-        return ResponseEntity.ok(ApiResponse.ok(movieService.getMovie(id)));
+    @GetMapping("/movies/{tmdbId}")
+    public ResponseEntity<ApiResponse<MovieService.MovieDetailResult>> getMovie(@PathVariable Long tmdbId) {
+        return ResponseEntity.ok(ApiResponse.ok(movieService.getMovieByTmdbId(tmdbId)));
     }
 
     @GetMapping("/movies/tmdb/{tmdbId}")
