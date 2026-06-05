@@ -48,7 +48,11 @@ spring-shell.log
 .env.*
 *.env
 *.env.*
+!.env.example
+!**/.env.example
 application-local.properties
 application-secret.properties
 **/application-prod.properties
 **/application-*.local.properties
+node_modules/
+**/node_modules/
