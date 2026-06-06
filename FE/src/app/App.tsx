@@ -14,7 +14,7 @@ import ProtectedRoute from "../routes/ProtectedRoute";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/recommend_movies_website">
 
       <Routes>
 
