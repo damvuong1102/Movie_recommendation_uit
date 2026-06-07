@@ -4,6 +4,12 @@ const { ok, errorResponse } = require("../utils/apiResponse");
 
 const router = express.Router();
 
+const TMDB_BASE_URL = process.env.TMDB_BASE_URL || "https://api.themoviedb.org/3";
+const TMDB_IMAGE_BASE_URL = process.env.TMDB_IMAGE_BASE_URL || "https://image.tmdb.org/t/p";
+const TMDB_ACCESS_TOKEN = process.env.TMDB_ACCESS_TOKEN;
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
+const tmdbMovieCache = new Map();
+
 function toPositiveInt(value, fallback, max = Number.MAX_SAFE_INTEGER) {
   const parsed = Number.parseInt(value, 10);
   if (Number.isNaN(parsed) || parsed < 0) {
@@ -11,6 +17,70 @@ function toPositiveInt(value, fallback, max = Number.MAX_SAFE_INTEGER) {
   }
 
   return Math.min(parsed, max);
+}
+
+function tmdbAuthenticationConfigured() {
+  return Boolean(TMDB_ACCESS_TOKEN || TMDB_API_KEY);
+}
+
+function buildImageUrl(path, size = "w500") {
+  if (!path) {
+    return null;
+  }
+
+  const normalizedPath = String(path).startsWith("/") ? path : `/${path}`;
+  return `${TMDB_IMAGE_BASE_URL}/${size}${normalizedPath}`;
+}
+
+async function fetchTmdbMovie(tmdbId) {
+  if (!tmdbId || !tmdbAuthenticationConfigured()) {
+    return null;
+  }
+
+  const cacheKey = String(tmdbId);
+  if (tmdbMovieCache.has(cacheKey)) {
+    return tmdbMovieCache.get(cacheKey);
+  }
+
+  const url = new URL(`${TMDB_BASE_URL.replace(/\/$/, "")}/movie/${tmdbId}`);
+  const headers = {};
+
+  if (TMDB_ACCESS_TOKEN) {
+    headers.Authorization = `Bearer ${TMDB_ACCESS_TOKEN}`;
+  } else {
+    url.searchParams.set("api_key", TMDB_API_KEY);
+  }
+
+  try {
+    const response = await fetch(url, { headers });
+    if (!response.ok) {
+      console.warn(`TMDB request failed for ${tmdbId}: ${response.status}`);
+      return null;
+    }
+
+    const movie = await response.json();
+    const assets = {
+      title: movie.title,
+      overview: movie.overview,
+      posterUrl: buildImageUrl(movie.poster_path, "w500"),
+      backdropUrl: buildImageUrl(movie.backdrop_path, "w1280"),
+      releaseDate: movie.release_date || null,
+      releaseYear: movie.release_date ? Number(movie.release_date.slice(0, 4)) : null,
+      runtimeMinutes: movie.runtime || null,
+      originalLanguage: movie.original_language || null,
+      popularity: movie.popularity ?? null,
+      voteCount: movie.vote_count ?? null,
+      genres: Array.isArray(movie.genres)
+        ? movie.genres.map((genre) => genre.name).filter(Boolean).join(", ")
+        : null,
+    };
+
+    tmdbMovieCache.set(cacheKey, assets);
+    return assets;
+  } catch (error) {
+    console.warn(`TMDB request failed for ${tmdbId}:`, error.message);
+    return null;
+  }
 }
 
 function mapMovie(row) {
@@ -23,6 +93,30 @@ function mapMovie(row) {
     genres: row.genres,
     avgRating: Number(row.avg_rating || 0),
     ratingCount: Number(row.rating_count || 0),
+  };
+}
+
+async function mapMovieWithAssets(row, { detail = false } = {}) {
+  const movie = mapMovie(row);
+  const tmdbMovie = await fetchTmdbMovie(movie.tmdbId);
+
+  return {
+    ...movie,
+    title: movie.title || tmdbMovie?.title,
+    genres: movie.genres || tmdbMovie?.genres,
+    posterUrl: tmdbMovie?.posterUrl || null,
+    releaseYear: tmdbMovie?.releaseYear || null,
+    ...(detail
+      ? {
+          overview: tmdbMovie?.overview || "",
+          backdropUrl: tmdbMovie?.backdropUrl || null,
+          releaseDate: tmdbMovie?.releaseDate || null,
+          originalLanguage: tmdbMovie?.originalLanguage || null,
+          runtimeMinutes: tmdbMovie?.runtimeMinutes || null,
+          popularity: tmdbMovie?.popularity || null,
+          voteCount: tmdbMovie?.voteCount || null,
+        }
+      : {}),
   };
 }
 
@@ -88,9 +182,10 @@ router.get("/movies", async (req, res, next) => {
 
     const totalElements = countResult.rows[0].total;
     const totalPages = Math.ceil(totalElements / size);
+    const movies = await Promise.all(dataResult.rows.map((row) => mapMovieWithAssets(row)));
 
     res.json(ok({
-      content: dataResult.rows.map(mapMovie),
+      content: movies,
       page,
       size,
       totalElements,
@@ -128,7 +223,7 @@ async function getMovieByTmdbId(req, res, next) {
       return;
     }
 
-    res.json(ok(mapMovie(result.rows[0])));
+    res.json(ok(await mapMovieWithAssets(result.rows[0], { detail: true })));
   } catch (error) {
     next(error);
   }
@@ -184,7 +279,8 @@ router.get("/recommendations/:userId", async (req, res, next) => {
       [req.params.userId, limit]
     );
 
-    res.json(ok(result.rows.map(mapMovie)));
+    const movies = await Promise.all(result.rows.map((row) => mapMovieWithAssets(row)));
+    res.json(ok(movies));
   } catch (error) {
     next(error);
   }

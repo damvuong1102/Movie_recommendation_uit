@@ -52,6 +52,7 @@ Environment variables:
 DATABASE_URL=postgresql://...
 NODE_ENV=production
 CORS_ORIGIN=https://your-frontend-domain.com
+TMDB_ACCESS_TOKEN=...
 ```
 
 For local frontend plus production frontend, separate origins with commas:
@@ -59,3 +60,6 @@ For local frontend plus production frontend, separate origins with commas:
 ```text
 CORS_ORIGIN=http://localhost:5173,https://your-frontend-domain.com
 ```
+
+`TMDB_ACCESS_TOKEN` is needed for poster/backdrop enrichment. You can use
+`TMDB_API_KEY` instead, but the access token is preferred.
