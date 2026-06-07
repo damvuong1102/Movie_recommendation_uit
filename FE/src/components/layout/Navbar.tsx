@@ -1,5 +1,4 @@
 // src/components/layout/Navbar.tsx
-import logoImg from "./logo.png";
 import { Search, LogIn, LogOut, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -104,7 +103,7 @@ export default function Navbar({
             className="flex items-center gap-3 shrink-0"
           >
             <img 
-              src={logoImg} // 2. Đổi src từ chuỗi string sang biến đã import
+              src="/logo.png" // 💡 ĐỔI THÀNH ĐƯỜNG DẪN TĨNH: Trỏ thẳng vào thư mục public
               alt="Movies4You Logo" 
               className="h-10 w-auto object-contain" 
             />
