@@ -1,5 +1,5 @@
 // src/components/layout/Navbar.tsx
-
+import logoImg from "./logo.png";
 import { Search, LogIn, LogOut, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -104,11 +104,11 @@ export default function Navbar({
             className="flex items-center gap-3 shrink-0"
           >
             <img 
-              src="/src/components/layout/logo.png" 
-              alt="CineStream Logo" 
+              src={logoImg} // 2. Đổi src từ chuỗi string sang biến đã import
+              alt="Movies4You Logo" 
               className="h-10 w-auto object-contain" 
             />
-            <h1 className="text-xl hidden sm:block">CineStream</h1>
+            <h1 className="text-xl hidden sm:block">Movies4You</h1>
           </Link>
 
           {/* Desktop search */}

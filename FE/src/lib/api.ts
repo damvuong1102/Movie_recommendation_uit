@@ -1,6 +1,6 @@
 // src/lib/api.ts
 
-const BASE_URL = "https://composer-unlearned-unwind.ngrok-free.dev/api";
+const BASE_URL = "https://movie-recommendation-uit.onrender.com";
 
 let refreshPromise: Promise<string> | null = null;
 
@@ -11,11 +11,10 @@ async function doRefresh(): Promise<string> {
     throw new Error("No refresh token available");
   }
 
-  const res = await fetch(`${BASE_URL}/auth/refresh`, {
+  const res = await fetch(`${BASE_URL}/api/auth/refresh`, {
     method: "POST",
     headers: { 
       "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true" // <--- THÊM VÀO ĐÂY
     },
     body: JSON.stringify({ refreshToken }),
   });
@@ -40,11 +39,12 @@ export async function apiFetch(
 ): Promise<any> {
   const token = localStorage.getItem("token");
 
-  const res = await fetch(`${BASE_URL}${endpoint}`, {
+  const correctEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+
+  const res = await fetch(`${BASE_URL}/api${correctEndpoint}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      "ngrok-skip-browser-warning": "true", // <--- THÊM VÀO ĐÂY: Fix lỗi ngrok chặn request ngầm
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
