@@ -1,6 +1,6 @@
 //src/app/App.tsx
 import {
-  HashRouter,
+  BrowserRouter,
   Routes,
   Route,
   Navigate
@@ -14,7 +14,7 @@ import ProtectedRoute from "../routes/ProtectedRoute";
 
 export default function App() {
   return (
-    <HashRouter>
+    <BrowserRouter basename="/recommend_movies_website">
 
       <Routes>
 
@@ -56,6 +56,6 @@ export default function App() {
 
       </Routes>
 
-    </HashRouter>
+    </BrowserRouter>
   );
 }
