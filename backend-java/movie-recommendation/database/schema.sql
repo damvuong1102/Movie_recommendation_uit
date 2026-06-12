@@ -2,7 +2,9 @@ CREATE TABLE IF NOT EXISTS movies (
   movie_id BIGINT PRIMARY KEY,
   title VARCHAR(500) NOT NULL,
   genres TEXT,
-  tmdb_id BIGINT UNIQUE
+  tmdb_id BIGINT UNIQUE,
+  avg_rating NUMERIC(3, 2) NOT NULL DEFAULT 0,
+  rating_count BIGINT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -21,5 +23,6 @@ CREATE TABLE IF NOT EXISTS ratings (
 
 CREATE INDEX IF NOT EXISTS idx_movies_title ON movies USING gin (to_tsvector('simple', title));
 CREATE INDEX IF NOT EXISTS idx_movies_genres ON movies (genres);
+CREATE INDEX IF NOT EXISTS idx_movies_avg_rating ON movies (avg_rating);
 CREATE INDEX IF NOT EXISTS idx_ratings_movie_id ON ratings (movie_id);
 CREATE INDEX IF NOT EXISTS idx_ratings_user_id ON ratings (user_id);
