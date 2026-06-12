@@ -28,12 +28,13 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
 
     Optional<Movie> findByMovielensId(Long movielensId);
 
-    @Modifying
+    @Modifying(flushAutomatically = true)
     @Query(
             "UPDATE Movie m SET" +
-                    " m.avgRating = (SELECT AVG(r.rating) FROM Rating r WHERE r.movie = m)," +
-                    " m.ratingCount = (SELECT COUNT(r) FROM Rating r WHERE r.movie = m)" +
+                    " m.avgRating = COALESCE((SELECT AVG(r.rating) FROM Rating r WHERE r.movie = m), 0.0)," +
+                    " m.ratingCount = (SELECT COUNT(r) FROM Rating r WHERE r.movie = m)," +
+                    " m.updatedAt = CURRENT_TIMESTAMP" +
                     " WHERE m.id = :movieId"
     )
-    void recalculateRating(@Param("movieId") Long movieId);
+    int recalculateRating(@Param("movieId") Long movieId);
 }

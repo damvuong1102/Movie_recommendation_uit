@@ -61,11 +61,11 @@ public class Movie {
     private Integer runtimeMinutes;
 
     // Denormalized avg for fast sorting on home page
-    @Column(name = "avg_rating", precision = 3)
+    @Column(name = "avg_rating", nullable = false, precision = 3)
     @Builder.Default
     private Double avgRating = 0.0;
 
-    @Column(name = "rating_count")
+    @Column(name = "rating_count", nullable = false)
     @Builder.Default
     private Long ratingCount = 0L;
 

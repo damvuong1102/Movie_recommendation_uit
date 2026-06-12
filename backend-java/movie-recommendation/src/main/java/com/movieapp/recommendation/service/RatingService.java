@@ -41,7 +41,7 @@ public class RatingService {
         rating.setRating(command.rating());
         rating.setReview(command.review());
 
-        Rating savedRating = ratingRepository.save(rating);
+        Rating savedRating = ratingRepository.saveAndFlush(rating);
         movieRepository.recalculateRating(movie.getId());
 
         return RatingResult.from(savedRating);
