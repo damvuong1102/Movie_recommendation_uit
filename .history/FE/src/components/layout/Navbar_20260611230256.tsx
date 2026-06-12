@@ -103,7 +103,7 @@ export default function Navbar({
             className="flex items-center gap-3 shrink-0"
           >
             <img 
-              src={logoImage} 
+              src="/logo.png" 
               alt="Movies4You Logo" 
               className="h-10 w-auto object-contain" 
             />

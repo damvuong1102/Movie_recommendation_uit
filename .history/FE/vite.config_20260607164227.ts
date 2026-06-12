@@ -32,8 +32,11 @@ export default defineConfig({
 
   assetsInclude: ['**/*.svg', '**/*.csv'],
 
-  build: {
-    outDir: '../docs/',
-    emptyOutDir: true,
+  server: {
+    host: true,
+    port: 5173,
+    allowedHosts: [
+      'spearmint-rewire-down.ngrok-free.dev'
+    ]
   }
 })

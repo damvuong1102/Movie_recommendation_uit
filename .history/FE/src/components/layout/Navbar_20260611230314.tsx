@@ -103,12 +103,21 @@ export default function Navbar({
             className="flex items-center gap-3 shrink-0"
           >
             <img 
-              src={logoImage} 
+              src="/logo.png" 
               alt="Movies4You Logo" 
               className="h-10 w-auto object-contain" 
             />
             <h1 className="text-xl hidden sm:block">Movies4You</h1>
           </Link>
+
+<Link to="/home" className="flex items-center gap-2">
+  <img 
+    src={logoImage} // Đổi thành biến đã import (bỏ dấu ngoặc kép, dùng ngoặc nhọn)
+    alt="Movies4You Logo" 
+    className="h-10 w-auto object-contain" 
+  />
+  <h1 className="text-xl hidden sm:block">Movies4You</h1>
+</Link>
 
           {/* Desktop search */}
           {search !== undefined && setSearch !== undefined && (

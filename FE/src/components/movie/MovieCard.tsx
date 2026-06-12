@@ -1,10 +1,9 @@
-// src/components/movie/MovieCard.tsx
-
 import { Star, Play } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";
 import { MovieSummary } from "../../types/movie";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 interface MovieCardProps extends MovieSummary {}
 
@@ -21,19 +20,49 @@ export function MovieCard({
   posterUrl
 }: MovieCardProps) {
   const navigate = useNavigate();
+  const [imgSrc, setImgSrc] = useState<string>("");
 
-  // 1. Xử lý đường dẫn ảnh chuẩn hóa
-  const getPosterUrl = (url: string | undefined) => {
-    if (!url) return "https://placehold.co/400x600?text=No+Poster";
-    
-    // Nếu API chỉ trả về phần đuôi của TMDB (ví dụ: /abcde.jpg)
-    if (url.startsWith("/")) {
-      return `https://image.tmdb.org/t/p/w500${url}`;
-    }
-    
-    // Nếu API trả về link đầy đủ (http...) thì giữ nguyên
-    return url;
+  const getPlaceholderUrl = (movieTitle: string) => {
+    const cleanTitle = movieTitle.split("(")[0].trim();
+    return `https://images.placeholders.dev/?width=400&height=600&text=${encodeURIComponent(
+      cleanTitle
+    )}&bgColor=%231e293b&textColor=%23f8fafc&fontSize=28`;
   };
+
+  useEffect(() => {
+    if (posterUrl && posterUrl.trim() !== "") {
+      const fullUrl = posterUrl.startsWith("/") 
+        ? `https://image.tmdb.org/t/p/w500${posterUrl}` 
+        : posterUrl;
+      setImgSrc(fullUrl);
+      return;
+    }
+
+    if (tmdbId) {
+      const fetchPosterFromTmdb = async () => {
+        try {
+          const response = await fetch(
+            `https://api.themoviedb.org/3/movie/${tmdbId}?api_key=844dba0bfd8f3a4f3799f6130ef9e335`
+          );
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.poster_path) {
+              setImgSrc(`https://image.tmdb.org/t/p/w500${data.poster_path}`);
+              return;
+            }
+          }
+          setImgSrc(getPlaceholderUrl(title));
+        } catch (error) {
+          setImgSrc(getPlaceholderUrl(title));
+        }
+      };
+
+      fetchPosterFromTmdb();
+    } else {
+      setImgSrc(getPlaceholderUrl(title));
+    }
+  }, [posterUrl, tmdbId, title]);
 
   return (
     <Card
@@ -41,15 +70,16 @@ export function MovieCard({
       onClick={() => navigate(`/movie/${tmdbId}`)}
     >
       <div className="relative aspect-[2/3] overflow-hidden bg-muted">
-        <img
-          src={getPosterUrl(posterUrl)} // Sử dụng hàm convert link ở đây
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          onError={(e) => {
-            // 2. Dự phòng nếu link ảnh chết (Lỗi 404 từ server ảnh)
-            e.currentTarget.src = "https://placehold.co/400x600?text=No+Poster";
-          }}
-        />
+        {imgSrc && (
+          <img
+            src={imgSrc}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            onError={(e) => {
+              e.currentTarget.src = getPlaceholderUrl(title);
+            }}
+          />
+        )}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-colors flex items-center justify-center">
           <div className="opacity-0 group-hover:opacity-100 transition-opacity">
             <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
