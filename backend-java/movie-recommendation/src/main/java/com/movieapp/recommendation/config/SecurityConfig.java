@@ -39,7 +39,6 @@ public class SecurityConfig {
             .sessionManagement(session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // ── Public endpoints ─────────────────────────────
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/", "/error").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
@@ -47,13 +46,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/movies").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/genres").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/recommendations/**").permitAll()
-
-                // ── Protected endpoints ──────────────────────────
                 .requestMatchers("/api/ratings/**").authenticated()
                 .requestMatchers("/api/users/**").authenticated()
                 .requestMatchers("/users/**").authenticated()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-
                 .anyRequest().authenticated()
             )
             .authenticationProvider(authenticationProvider())

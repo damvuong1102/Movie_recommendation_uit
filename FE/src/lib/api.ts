@@ -4,6 +4,26 @@ const BASE_URL = "https://movie4you-hqf0.onrender.com";
 
 let refreshPromise: Promise<string> | null = null;
 
+function shouldAttachAuth(endpoint: string, method: string) {
+  const normalizedEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const normalizedMethod = method.toUpperCase();
+
+  if (normalizedEndpoint.startsWith("/auth/login") || normalizedEndpoint.startsWith("/auth/register")) {
+    return false;
+  }
+
+  if (
+    normalizedMethod === "GET" &&
+    (normalizedEndpoint.startsWith("/movies") ||
+      normalizedEndpoint.startsWith("/genres") ||
+      normalizedEndpoint.startsWith("/recommendations"))
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 async function doRefresh(): Promise<string> {
   const refreshToken = localStorage.getItem("refreshToken");
 
@@ -40,12 +60,14 @@ export async function apiFetch(
   const token = localStorage.getItem("token");
 
   const correctEndpoint = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const method = options.method || "GET";
+  const includeAuth = shouldAttachAuth(correctEndpoint, method);
 
   const res = await fetch(`${BASE_URL}/api${correctEndpoint}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(includeAuth && token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });
