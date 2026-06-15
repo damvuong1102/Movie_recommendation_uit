@@ -1,6 +1,6 @@
 // src/lib/api.ts
 
-const BASE_URL = "https://movie4you-hqf0.onrender.com";
+const BASE_URL = "https://movie4you-hqf0.onrender.com/";
 
 let refreshPromise: Promise<string> | null = null;
 

@@ -17,6 +17,7 @@ export async function getMovies(params?: {
   
   if (params?.search) query.set("query", params.search); 
   
+  // Giữ nguyên logic cũ của bạn để không làm sập giao diện Home
   if (params?.type) query.set("type", params.type);
 
   const qs = query.toString();

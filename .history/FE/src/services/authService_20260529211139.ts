@@ -2,7 +2,8 @@
 import { apiFetch } from "../lib/api";
 
 export async function login(username: string, password: string) {
- 
+  // ── GIẢ LẬP TÀI KHOẢN ADMIN ĐỂ CHẠY CHAY (MOCK AUTH) ───────────────────────
+  
   if (username === "admin" && password === "admin123") {
     const mockAdminResponse = {
       success: true,
