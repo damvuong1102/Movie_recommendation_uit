@@ -8,10 +8,11 @@ import { submitRating } from "../../services/ratingService";
 
 interface RatingSubmitProps {
   movieId: number;
+  tmdbId?: number;
   onSuccess?: () => void;
 }
 
-export function RatingSubmit({ movieId, onSuccess }: RatingSubmitProps) {
+export function RatingSubmit({ movieId, tmdbId, onSuccess }: RatingSubmitProps) {
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0); 
   const [review, setReview] = useState("");
@@ -23,7 +24,7 @@ export function RatingSubmit({ movieId, onSuccess }: RatingSubmitProps) {
     setLoading(true);
     setError("");
     try {
-      await submitRating({ movieId, rating, review });
+      await submitRating({ movieId, tmdbId, rating, review });
       setRating(0);
       setReview("");
       onSuccess?.();
