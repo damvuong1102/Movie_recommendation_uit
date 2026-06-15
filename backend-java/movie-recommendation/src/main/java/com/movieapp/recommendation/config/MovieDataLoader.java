@@ -7,12 +7,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,8 +31,9 @@ import java.util.Set;
 public class MovieDataLoader implements ApplicationRunner {
 
     private final MovieRepository movieRepository;
+    private final ResourceLoader resourceLoader;
 
-    @Value("${app.dataset.movies-path:../../Data-processing/dataset/movies_ready_for_db.csv}")
+    @Value("${app.dataset.movies-path:classpath:movies_ready_for_db.csv}")
     private String moviesPath;
 
     @Override
@@ -40,51 +44,71 @@ public class MovieDataLoader implements ApplicationRunner {
             return;
         }
 
-        Path csvPath = Paths.get(moviesPath).toAbsolutePath().normalize();
-        if (!Files.exists(csvPath)) {
-            log.warn("Movie seed file not found at {}. Set app.dataset.movies-path to seed movies.", csvPath);
+        MovieSeedSource seedSource = openMovieSeedSource();
+        if (seedSource == null) {
+            log.warn("Movie seed file not found at {}. Set app.dataset.movies-path to seed movies.", moviesPath);
             return;
         }
 
-        List<Movie> movies = loadMovies(csvPath);
-        movieRepository.saveAll(movies);
-        log.info("Seeded {} movies from {}.", movies.size(), csvPath);
+        try (BufferedReader reader = seedSource.reader()) {
+            List<Movie> movies = loadMovies(reader);
+            movieRepository.saveAll(movies);
+            log.info("Seeded {} movies from {}.", movies.size(), seedSource.description());
+        }
     }
 
-    private List<Movie> loadMovies(Path csvPath) throws IOException {
+    private MovieSeedSource openMovieSeedSource() throws IOException {
+        if (moviesPath.contains(":")) {
+            Resource resource = resourceLoader.getResource(moviesPath);
+            if (!resource.exists()) {
+                return null;
+            }
+
+            return new MovieSeedSource(
+                    resource.getDescription(),
+                    new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)));
+        }
+
+        Path csvPath = Paths.get(moviesPath).toAbsolutePath().normalize();
+        if (!Files.exists(csvPath)) {
+            return null;
+        }
+
+        return new MovieSeedSource(csvPath.toString(), Files.newBufferedReader(csvPath, StandardCharsets.UTF_8));
+    }
+
+    private List<Movie> loadMovies(BufferedReader reader) throws IOException {
         List<Movie> movies = new ArrayList<>();
         Set<Long> movielensIds = new HashSet<>();
         Set<Long> tmdbIds = new HashSet<>();
 
-        try (BufferedReader reader = Files.newBufferedReader(csvPath, StandardCharsets.UTF_8)) {
-            String header = reader.readLine();
-            if (header == null) {
-                return movies;
+        String header = reader.readLine();
+        if (header == null) {
+            return movies;
+        }
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+            List<String> columns = parseCsvLine(line);
+            if (columns.size() < 4 || !StringUtils.hasText(columns.get(1))) {
+                continue;
             }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                List<String> columns = parseCsvLine(line);
-                if (columns.size() < 4 || !StringUtils.hasText(columns.get(1))) {
-                    continue;
-                }
-
-                Long movielensId = parseLong(columns.get(0));
-                Long tmdbId = parseLong(columns.get(3));
-                if (isDuplicate(movielensId, movielensIds) || isDuplicate(tmdbId, tmdbIds)) {
-                    log.debug("Skipping duplicate movie seed row: {}", line);
-                    continue;
-                }
-
-                movies.add(Movie.builder()
-                        .movielensId(movielensId)
-                        .title(columns.get(1).trim())
-                        .genres(blankToNull(columns.get(2)))
-                        .tmdbId(tmdbId)
-                        .avgRating(0.0)
-                        .ratingCount(0L)
-                        .build());
+            Long movielensId = parseLong(columns.get(0));
+            Long tmdbId = parseLong(columns.get(3));
+            if (isDuplicate(movielensId, movielensIds) || isDuplicate(tmdbId, tmdbIds)) {
+                log.debug("Skipping duplicate movie seed row: {}", line);
+                continue;
             }
+
+            movies.add(Movie.builder()
+                    .movielensId(movielensId)
+                    .title(columns.get(1).trim())
+                    .genres(blankToNull(columns.get(2)))
+                    .tmdbId(tmdbId)
+                    .avgRating(0.0)
+                    .ratingCount(0L)
+                    .build());
         }
 
         return movies;
@@ -131,5 +155,8 @@ public class MovieDataLoader implements ApplicationRunner {
 
     private static String blankToNull(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
+    }
+
+    private record MovieSeedSource(String description, BufferedReader reader) {
     }
 }
