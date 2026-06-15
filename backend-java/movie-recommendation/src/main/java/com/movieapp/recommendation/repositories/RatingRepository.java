@@ -22,7 +22,7 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
 
     Page<Rating> findByUser_Id(Long userId, Pageable pageable);
 
-    Page<Rating> findByMovie_Id(Long movieId, Pageable pageable);
+    Page<Rating> findByMovie_IdOrderByUpdatedAtDesc(Long movieId, Pageable pageable);
 
     boolean existsByUser_IdAndMovie_Id(Long userId, Long movieId);
 

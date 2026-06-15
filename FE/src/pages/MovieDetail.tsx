@@ -46,7 +46,7 @@ export default function MovieDetail() {
         });
 
         try {
-          const ratingsRes = await getMovieRatings(Number(id));
+          const ratingsRes = await getMovieRatings(movieData.id);
           if (ratingsRes?.data) {
             setRatings(ratingsRes.data.content);
           }
@@ -71,13 +71,12 @@ export default function MovieDetail() {
   const refreshAfterReview = useCallback(async () => {
     setRatingsLoading(true);
     try {
-      const [movieRes, ratingsRes] = await Promise.all([
-        getMovieById(Number(id)),
-        getMovieRatings(Number(id)),
-      ]);
+      const movieRes = await getMovieById(Number(id));
+      const freshMovie: MovieDetailType = movieRes.data;
+      const ratingsRes = await getMovieRatings(freshMovie.id);
 
       // Cập nhật avgRating và ratingCount trên UI
-      setMovie(movieRes.data);
+      setMovie(freshMovie);
 
       // Hiện review mới lên đầu danh sách
       const fresh: RatingResponse[] = ratingsRes?.data?.content ?? [];
@@ -213,7 +212,11 @@ export default function MovieDetail() {
           <div>
             {isAuthenticated ? (
               // onSuccess giờ gọi refreshAfterReview thay vì refreshRatings cũ
-              <RatingSubmit movieId={Number(id)} onSuccess={refreshAfterReview} />
+              <RatingSubmit
+                movieId={movie.id}
+                tmdbId={movie.tmdbId}
+                onSuccess={refreshAfterReview}
+              />
             ) : (
               <div className="border rounded-lg p-6 bg-muted/30">
                 <h3 className="text-lg mb-2">Want to share your thoughts?</h3>

@@ -4,6 +4,7 @@ export interface RatingResponse {
   userId: number;
   username: string;
   movieId: number;
+  tmdbId?: number;
   movieTitle: string;
   rating: number;
   review: string;
@@ -13,6 +14,7 @@ export interface RatingResponse {
 
 export interface RatingRequest {
   movieId: number;
+  tmdbId?: number;
   rating: number;   // 0.5–5.0 per the API contract
   review?: string;
 }

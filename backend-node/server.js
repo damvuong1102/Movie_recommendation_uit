@@ -3,6 +3,7 @@ const cors = require("cors");
 require("./src/config/env");
 
 const pool = require("./src/config/db");
+const authRoutes = require("./src/routes/authRoutes");
 const movieRoutes = require("./src/routes/movieRoutes");
 const ratingRoutes = require("./src/routes/ratingRoutes");
 const userRoutes = require("./src/routes/userRoutes");
@@ -44,6 +45,7 @@ app.get("/health", async (req, res, next) => {
   }
 });
 
+app.use("/api", authRoutes);
 app.use("/api", movieRoutes);
 app.use("/api", ratingRoutes);
 app.use("/api", userRoutes);

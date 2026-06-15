@@ -8,5 +8,9 @@ if (!process.env.DATABASE_URL) {
 }
 
 if (!process.env.DATABASE_URL) {
+  dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
+}
+
+if (!process.env.DATABASE_URL) {
   dotenv.config({ path: path.resolve(__dirname, "../../../../.env") });
 }
