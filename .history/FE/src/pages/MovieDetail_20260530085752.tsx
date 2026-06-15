@@ -1,3 +1,5 @@
+// src/pages/MovieDetail.tsx
+
 import { useState, useEffect, useCallback } from "react";
 import { LogIn, Star, Clock, Calendar, Play } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -14,7 +16,7 @@ import { RatingResponse } from "../types/rating";
 import { recordWatch } from "./Home";
 
 export default function MovieDetail() {
-  const { id } = useParams(); // Đây là ID lấy từ URL thanh địa chỉ
+  const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
@@ -28,13 +30,10 @@ export default function MovieDetail() {
   useEffect(() => {
     async function fetchData() {
       try {
-        setLoading(true);
-        // Bước 1: Lấy chi tiết phim bằng ID từ URL trước
         const movieRes = await getMovieById(Number(id));
         const movieData: MovieDetailType = movieRes.data;
         setMovie(movieData);
 
-        // Lưu vào danh sách phim đã xem gần đây
         recordWatch({
           id:          movieData.id,
           tmdbId:      movieData.tmdbId,
@@ -46,9 +45,8 @@ export default function MovieDetail() {
           ratingCount: movieData.ratingCount,
         });
 
-        // Bước 2: SỬA TẠI ĐÂY - Dùng movieData.id thực tế từ Database để gọi API Ratings
         try {
-          const ratingsRes = await getMovieRatings(movieData.id);
+          const ratingsRes = await getMovieRatings(Number(id));
           if (ratingsRes?.data) {
             setRatings(ratingsRes.data.content);
           }
@@ -57,7 +55,7 @@ export default function MovieDetail() {
           setRatings([]);
         }
       } catch (err: any) {
-        if (err.message === "Movie not found" || err.response?.status === 404) {
+        if (err.message === "Movie not found") {
           setNotFound(true);
         } else {
           console.error("Lỗi lấy chi tiết phim:", err);
@@ -71,19 +69,17 @@ export default function MovieDetail() {
 
   // Sau khi submit review: re-fetch cả ratings lẫn movie (để cập nhật avgRating + ratingCount)
   const refreshAfterReview = useCallback(async () => {
-    if (!movie) return;
     setRatingsLoading(true);
     try {
-      // SỬA TẠI ĐÂY: Dùng movie.id chuẩn của Database để refresh chính xác dữ liệu bộ phim đó
       const [movieRes, ratingsRes] = await Promise.all([
-        getMovieById(movie.id),
-        getMovieRatings(movie.id),
+        getMovieById(Number(id)),
+        getMovieRatings(Number(id)),
       ]);
 
-      // Cập nhật điểm số trung bình (avgRating) và lượt đánh giá mới trên UI công khai
+      // Cập nhật avgRating và ratingCount trên UI
       setMovie(movieRes.data);
 
-      // Hiển thị review mới vừa viết lên đầu danh sách
+      // Hiện review mới lên đầu danh sách
       const fresh: RatingResponse[] = ratingsRes?.data?.content ?? [];
       setRatings(fresh);
     } catch (err) {
@@ -91,19 +87,19 @@ export default function MovieDetail() {
     } finally {
       setRatingsLoading(false);
     }
-  }, [movie]);
+  }, [id]);
 
   if (loading)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground animate-pulse">
-        Loading movie details...
+      <div className="min-h-screen flex items-center justify-center">
+        Loading...
       </div>
     );
 
   if (notFound || !movie)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <h1 className="text-xl font-semibold">Movie not found</h1>
+      <div className="min-h-screen flex items-center justify-center">
+        <h1>Movie not found</h1>
       </div>
     );
 
@@ -129,7 +125,7 @@ export default function MovieDetail() {
             <img
               src={movie.posterUrl}
               alt={movie.title}
-              className="w-full rounded-lg shadow-2xl border border-border/50"
+              className="w-full rounded-lg shadow-2xl"
             />
             <Button className="w-full mt-4" size="lg">
               <Play className="w-5 h-5 mr-2 fill-current" />
@@ -140,7 +136,7 @@ export default function MovieDetail() {
           {/* Info */}
           <div className="space-y-6 pt-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2 text-foreground">{movie.title}</h1>
+              <h1 className="mb-2">{movie.title}</h1>
 
               <div className="flex flex-wrap items-center gap-4 text-muted-foreground mb-4">
                 <div className="flex items-center gap-2">
@@ -154,12 +150,12 @@ export default function MovieDetail() {
               </div>
 
               <div className="flex flex-wrap gap-2 mb-6">
-                {movie.genres && movie.genres.split("|").map((g) => (
+                {movie.genres.split("|").map((g) => (
                   <Badge key={g} variant="secondary">{g}</Badge>
                 ))}
               </div>
 
-              {/* Hiển thị điểm số xếp hạng */}
+              {/* avgRating tự cập nhật sau khi user submit review */}
               <div className="flex items-center gap-4 mb-6">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
@@ -172,26 +168,24 @@ export default function MovieDetail() {
                       />
                     ))}
                   </div>
-                  <span className="text-xl font-semibold">
-                    {movie.avgRating ? movie.avgRating.toFixed(1) : "0.0"}
-                  </span>
+                  <span className="text-xl">{movie.avgRating.toFixed(1)}</span>
                 </div>
                 <Separator orientation="vertical" className="h-6" />
                 <span className="text-sm text-muted-foreground">
-                  {movie.ratingCount ? movie.ratingCount.toLocaleString() : 0} ratings
+                  {movie.ratingCount.toLocaleString()} ratings
                 </span>
               </div>
 
-              <p className="text-muted-foreground leading-relaxed mb-6">{movie.overview}</p>
+              <p className="text-muted-foreground mb-6">{movie.overview}</p>
             </div>
           </div>
         </div>
 
-        {/* Reviews Section */}
+        {/* Reviews + Rating submit */}
         <div className="grid lg:grid-cols-2 gap-8 pb-12">
           <div>
             <div className="flex items-center gap-2 mb-6">
-              <h2 className="text-xl font-bold">Reviews ({ratings.length})</h2>
+              <h2>Reviews ({ratings.length})</h2>
               {ratingsLoading && (
                 <span className="text-sm text-muted-foreground animate-pulse">
                   Updating...
@@ -200,8 +194,8 @@ export default function MovieDetail() {
             </div>
             <div className="space-y-4">
               {ratings.length === 0 && !ratingsLoading && (
-                <p className="text-sm text-muted-foreground italic">
-                  No reviews yet. Be the first to share your thoughts!
+                <p className="text-sm text-muted-foreground">
+                  No reviews yet. Be the first!
                 </p>
               )}
               {ratings.map((r) => (
@@ -216,13 +210,13 @@ export default function MovieDetail() {
             </div>
           </div>
 
-          {/* Form gửi đánh giá */}
           <div>
             {isAuthenticated ? (
-              <RatingSubmit movieId={movie.id} onSuccess={refreshAfterReview} />
+              // onSuccess giờ gọi refreshAfterReview thay vì refreshRatings cũ
+              <RatingSubmit movieId={Number(id)} onSuccess={refreshAfterReview} />
             ) : (
               <div className="border rounded-lg p-6 bg-muted/30">
-                <h3 className="text-lg font-medium mb-2">Want to share your thoughts?</h3>
+                <h3 className="text-lg mb-2">Want to share your thoughts?</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Log in to leave your review and rating for this movie.
                 </p>
