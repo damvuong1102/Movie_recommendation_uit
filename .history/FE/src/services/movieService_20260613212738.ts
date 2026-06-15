@@ -15,8 +15,10 @@ export async function getMovies(params?: {
   if (params?.sort) query.set("sort", params.sort);
   if (params?.genre) query.set("genre", params.genre);
   
+  // 🟢 CHỈ SỬA DUY NHẤT DÒNG NÀY: Đổi tên tham số gửi lên thành "query" để khớp với Backend
   if (params?.search) query.set("query", params.search); 
   
+  // Giữ nguyên logic cũ của bạn để không làm sập giao diện Home
   if (params?.type) query.set("type", params.type);
 
   const qs = query.toString();

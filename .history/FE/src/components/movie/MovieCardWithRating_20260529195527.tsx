@@ -1,4 +1,11 @@
 // src/components/movie/MovieCardWithRating.tsx
+//
+// Changes from original:
+//  6. Star clicks now call POST /ratings (submitRating) instead of only
+//     setting local state. Shows a loading state on the stars while submitting
+//     and uses the global toast for success/error feedback.
+//     Preserves the existing rating visually so the user sees their last choice.
+
 import { Star, Play, Loader2 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Badge } from "../ui/badge";

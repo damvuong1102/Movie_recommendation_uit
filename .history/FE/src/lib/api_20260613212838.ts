@@ -1,6 +1,6 @@
 // src/lib/api.ts
 
-const BASE_URL = "https://movie4you-hqf0.onrender.com";
+const BASE_URL = "https://movie-recommendation-uit.onrender.com";
 
 let refreshPromise: Promise<string> | null = null;
 
@@ -83,6 +83,7 @@ export async function apiFetch(
     const data = await res.json();
     errorMessage = data.message || errorMessage;
   } catch {
+    // response body wasn't JSON
   }
 
   const error = Object.assign(new Error(errorMessage), { status: res.status });
