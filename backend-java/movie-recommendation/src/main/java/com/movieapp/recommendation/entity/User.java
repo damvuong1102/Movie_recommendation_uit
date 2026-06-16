@@ -62,7 +62,7 @@ public class User implements UserDetails {
     @Builder.Default
     private boolean active = true;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")
