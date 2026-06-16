@@ -10,7 +10,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import java.io.BufferedReader;
@@ -34,6 +34,7 @@ public class MovieDataLoader implements ApplicationRunner {
 
     private final MovieRepository movieRepository;
     private final ResourceLoader resourceLoader;
+    private final TransactionTemplate transactionTemplate;
 
     @Value("${app.dataset.movies-path:classpath:movies_ready_for_db.csv}")
     private String moviesPath;
@@ -45,7 +46,6 @@ public class MovieDataLoader implements ApplicationRunner {
     private boolean dataLoaderEnabled;
 
     @Override
-    @Transactional
     public void run(ApplicationArguments args) {
         if (!dataLoaderEnabled) {
             log.info("Movie data loader is disabled.");
@@ -53,7 +53,13 @@ public class MovieDataLoader implements ApplicationRunner {
         }
 
         try {
-            runLoader();
+            transactionTemplate.executeWithoutResult(status -> {
+                try {
+                    runLoader();
+                } catch (IOException ex) {
+                    throw new IllegalStateException("Movie data loader failed while reading seed files.", ex);
+                }
+            });
         } catch (Exception ex) {
             log.error("Movie data loader failed. The application will continue running.", ex);
         }
