@@ -5,10 +5,10 @@ import com.movieapp.recommendation.repositories.MovieRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.web.server.context.WebServerInitializedEvent;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
@@ -26,15 +26,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MovieDataLoader implements ApplicationRunner {
+public class MovieDataLoader {
 
     private final MovieRepository movieRepository;
     private final ResourceLoader resourceLoader;
     private final TransactionTemplate transactionTemplate;
+    private final AtomicBoolean started = new AtomicBoolean(false);
 
     @Value("${app.dataset.movies-path:classpath:movies_ready_for_db.csv}")
     private String moviesPath;
@@ -45,13 +47,23 @@ public class MovieDataLoader implements ApplicationRunner {
     @Value("${app.data-loader.enabled:false}")
     private boolean dataLoaderEnabled;
 
-    @Override
-    public void run(ApplicationArguments args) {
+    @EventListener
+    public void onWebServerInitialized(WebServerInitializedEvent event) {
         if (!dataLoaderEnabled) {
             log.info("Movie data loader is disabled.");
             return;
         }
 
+        if (!started.compareAndSet(false, true)) {
+            return;
+        }
+
+        Thread loaderThread = new Thread(this::runSafely, "movie-data-loader");
+        loaderThread.setDaemon(true);
+        loaderThread.start();
+    }
+
+    private void runSafely() {
         try {
             transactionTemplate.executeWithoutResult(status -> {
                 try {
