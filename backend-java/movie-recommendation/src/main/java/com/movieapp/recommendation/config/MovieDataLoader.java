@@ -9,6 +9,7 @@ import org.springframework.boot.web.server.context.WebServerInitializedEvent;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.context.event.EventListener;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
@@ -16,6 +17,7 @@ import org.springframework.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.PreparedStatement;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,10 +34,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Component
 @RequiredArgsConstructor
 public class MovieDataLoader {
+    private static final int SEED_BATCH_SIZE = 500;
 
     private final MovieRepository movieRepository;
     private final ResourceLoader resourceLoader;
     private final TransactionTemplate transactionTemplate;
+    private final JdbcTemplate jdbcTemplate;
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     @Value("${app.dataset.movies-path:classpath:movies_ready_for_db.csv}")
@@ -65,13 +69,9 @@ public class MovieDataLoader {
 
     private void runSafely() {
         try {
-            transactionTemplate.executeWithoutResult(status -> {
-                try {
-                    runLoader();
-                } catch (IOException ex) {
-                    throw new IllegalStateException("Movie data loader failed while reading seed files.", ex);
-                }
-            });
+            runLoader();
+        } catch (IOException ex) {
+            log.error("Movie data loader failed while reading seed files. The application will continue running.", ex);
         } catch (Exception ex) {
             log.error("Movie data loader failed. The application will continue running.", ex);
         }
@@ -94,9 +94,62 @@ public class MovieDataLoader {
 
         try (BufferedReader reader = seedSource.reader()) {
             List<Movie> movies = loadMovies(reader, ratingStats);
-            movieRepository.saveAll(movies);
+            saveMoviesInBatches(movies);
             log.info("Seeded {} movies from {}.", movies.size(), seedSource.description());
         }
+    }
+
+    private void saveMoviesInBatches(List<Movie> movies) {
+        int total = movies.size();
+        for (int start = 0; start < total; start += SEED_BATCH_SIZE) {
+            int end = Math.min(start + SEED_BATCH_SIZE, total);
+            List<Movie> batch = movies.subList(start, end);
+
+            Integer inserted = transactionTemplate.execute(status -> insertMovieBatch(batch));
+
+            log.info("Seeded movie batch {}/{} (inserted {}).", end, total, inserted == null ? 0 : inserted);
+        }
+    }
+
+    private int insertMovieBatch(List<Movie> movies) {
+        String sql = """
+                INSERT INTO movies (
+                    avg_rating,
+                    baseline_avg_rating,
+                    baseline_rating_count,
+                    genres,
+                    movielens_id,
+                    rating_count,
+                    title,
+                    tmdb_id,
+                    created_at,
+                    updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+                ON CONFLICT (movielens_id) DO NOTHING
+                """;
+
+        int[][] results = jdbcTemplate.batchUpdate(sql, movies, movies.size(), this::bindMovieInsert);
+        int inserted = 0;
+        for (int[] batchResults : results) {
+            for (int result : batchResults) {
+                if (result > 0) {
+                    inserted += result;
+                }
+            }
+        }
+
+        return inserted;
+    }
+
+    private void bindMovieInsert(PreparedStatement statement, Movie movie) throws java.sql.SQLException {
+        statement.setDouble(1, movie.getAvgRating());
+        statement.setDouble(2, movie.getBaselineAvgRating());
+        statement.setLong(3, movie.getBaselineRatingCount());
+        statement.setString(4, movie.getGenres());
+        statement.setObject(5, movie.getMovielensId());
+        statement.setLong(6, movie.getRatingCount());
+        statement.setString(7, movie.getTitle());
+        statement.setObject(8, movie.getTmdbId());
     }
 
     private Map<Long, RatingStats> loadRatingStats() throws IOException {
