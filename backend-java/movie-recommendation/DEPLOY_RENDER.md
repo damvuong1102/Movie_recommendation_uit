@@ -1,38 +1,32 @@
-# Deploy Node Backend To Render
+# Deploy Java Backend To Render
 
-This backend uses Express, `pg`, and Neon PostgreSQL.
+This backend uses Spring Boot, JPA, Flyway, and PostgreSQL.
 
 ## Local setup
 
-1. Copy `.env.example` to `.env`.
-2. Set `DATABASE_URL` to your Neon connection string.
-3. Install dependencies:
+Build locally:
 
 ```bash
-npm install
+./mvnw clean package -DskipTests
 ```
 
-4. Run locally:
+Run locally:
 
 ```bash
-npm run dev
+./mvnw spring-boot:run
 ```
 
 Health check:
 
 ```text
-GET http://localhost:3000/health
+GET http://localhost:8080/actuator/health
 ```
 
-## Neon setup
+## PostgreSQL setup
 
-If your Neon database does not have tables yet, run `database/schema.sql` in the Neon SQL Editor.
-
-Then upload CSV data with:
-
-```bash
-python ../../Data-processing/upload_to_neon.py
-```
+Use the external JDBC URL from Render/Neon. The app can seed the bundled
+`movies_ready_for_db.csv` and `ratings.csv` files when the `movies` table is
+empty.
 
 ## Render setup
 
@@ -42,24 +36,33 @@ Use these settings:
 
 ```text
 Root Directory: backend-java/movie-recommendation
-Build Command: npm install
-Start Command: npm start
+Build Command: ./mvnw clean package -DskipTests
+Start Command: java -jar target/movie-recommendation-0.0.1-SNAPSHOT.jar
 ```
 
 Environment variables:
 
 ```text
-DATABASE_URL=postgresql://...
-NODE_ENV=production
-CORS_ORIGIN=https://your-frontend-domain.com
+SPRING_PROFILES_ACTIVE=prod
+SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:<port>/<database>?sslmode=require
+SPRING_DATASOURCE_USERNAME=<username>
+SPRING_DATASOURCE_PASSWORD=<password>
+CORS_ALLOWED_ORIGIN_PATTERNS=https://your-frontend-domain.com,https://*.github.io,https://*.vercel.app,https://*.onrender.com
+JWT_SECRET=<base64-encoded-secret>
 TMDB_ACCESS_TOKEN=...
 ```
 
-For local frontend plus production frontend, separate origins with commas:
+Important production notes:
 
-```text
-CORS_ORIGIN=http://localhost:5173,https://your-frontend-domain.com
-```
+- Keep `SPRING_PROFILES_ACTIVE=prod` enabled. It turns on Flyway before Hibernate
+  so PostgreSQL gets columns such as `avg_rating` before indexes and queries use
+  them.
+- `APP_DATA_LOADER_ENABLED` defaults to `true` in the `prod` profile. Set it to
+  `false` only after the database already has movie rows.
+- If `/api/movies` returns 500 and logs mention `column "avg_rating" does not
+  exist`, run a redeploy with the `prod` profile or execute
+  `src/main/resources/db/migration/V2__add_movie_rating_columns.sql` manually in
+  PostgreSQL.
 
 `TMDB_ACCESS_TOKEN` is needed for poster/backdrop enrichment. You can use
 `TMDB_API_KEY` instead, but the access token is preferred.

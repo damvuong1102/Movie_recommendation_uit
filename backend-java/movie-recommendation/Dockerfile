@@ -27,8 +27,10 @@ COPY --from=build \
 COPY Data-processing/dataset/movies_ready_for_db.csv \
     /app/dataset/movies_ready_for_db.csv
 
-ENV APP_DATASET_MOVIES_PATH=/app/dataset/movies_ready_for_db.csv
+ENV SPRING_PROFILES_ACTIVE=prod
+ENV FLYWAY_ENABLED=true
+ENV MOVIES_DATASET_PATH=/app/dataset/movies_ready_for_db.csv
 
-EXPOSE 8080
+EXPOSE 10000
 
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
