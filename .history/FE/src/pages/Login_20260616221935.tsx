@@ -413,8 +413,8 @@ export default function Login() {
                         <h3 className="mb-2 font-bold text-foreground">Tại sao nên chọn Movies4You?</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                           <li>• Đề xuất danh sách phim phù hợp theo sở thích cá nhân</li>
-                          <li>• Đánh giá và bình luận về các bộ phim thịnh hành</li>
-                          <li>• Tự động ghi nhớ lịch sử xem phim cá nhân</li>
+                          <li>• Đánh giá và để lại bình luận về các bộ phim yêu thích</li>
+                          <li>• Tự động ghi nhớ và theo dõi lịch sử xem phim cá nhân</li>
                           <li>• Cập nhật nhanh chóng xu hướng điện ảnh</li>
                         </ul>
                       </div>

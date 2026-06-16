@@ -303,7 +303,7 @@ export default function Register() {
                     type={showConfirmPassword ? "text" : "password"} // Thay đổi kiểu hiển thị linh hoạt
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Nhập lại mật khẩu"
+                    placeholder="Nhập lại mật khẩu phía trên"
                     disabled={loading}
                     required 
                     minLength={6}   
