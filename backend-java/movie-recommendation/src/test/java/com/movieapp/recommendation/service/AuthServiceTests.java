@@ -64,4 +64,21 @@ class AuthServiceTests {
         assertThat(jwtService.extractUsername(result.accessToken())).isEqualTo(username);
         assertThat(jwtService.isTokenValid(result.accessToken(), savedUser)).isTrue();
     }
+
+    @Test
+    void refreshReturnsNewUsableTokensForPersistedUser() {
+        String suffix = UUID.randomUUID().toString().substring(0, 8);
+        String username = "refresh_user_" + suffix;
+        String email = username + "@example.com";
+
+        AuthService.AuthResult registered = authService.register(username, email, "secret123", "Refresh User");
+
+        AuthService.AuthResult refreshed = authService.refresh(registered.refreshToken());
+
+        User savedUser = userRepository.findByUsername(username).orElseThrow();
+        assertThat(refreshed.user().id()).isEqualTo(savedUser.getId());
+        assertThat(jwtService.extractUsername(refreshed.accessToken())).isEqualTo(username);
+        assertThat(jwtService.isTokenValid(refreshed.accessToken(), savedUser)).isTrue();
+        assertThat(jwtService.isTokenValid(refreshed.refreshToken(), savedUser)).isTrue();
+    }
 }

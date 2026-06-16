@@ -61,4 +61,42 @@ class RatingServiceTests {
         assertThat(updatedMovie.getRatingCount()).isEqualTo(2L);
         assertThat(updatedMovie.getAvgRating()).isEqualTo(4.5);
     }
+
+    @Test
+    void updateAndDeleteRatingPersistChangesAndRecalculateStats() {
+        String suffix = UUID.randomUUID().toString().substring(0, 8);
+        User user = userRepository.save(User.builder()
+                .username("rating_user_c_" + suffix)
+                .email("rating_user_c_" + suffix + "@example.com")
+                .password("secret123")
+                .build());
+        Movie movie = movieRepository.save(Movie.builder()
+                .title("Rating Lifecycle Movie " + suffix)
+                .avgRating(0.0)
+                .ratingCount(0L)
+                .build());
+
+        RatingService.RatingResult saved = ratingService.rateMovie(
+                user.getId(),
+                new RatingService.RatingCommand(movie.getId(), null, 3.0, "Okay"));
+
+        RatingService.RatingResult updated = ratingService.updateRating(
+                user.getId(),
+                saved.id(),
+                new RatingService.RatingUpdateCommand(5.0, "Excellent"));
+
+        entityManager.clear();
+        Movie updatedMovie = movieRepository.findById(movie.getId()).orElseThrow();
+        assertThat(updated.rating()).isEqualTo(5.0);
+        assertThat(updated.review()).isEqualTo("Excellent");
+        assertThat(updatedMovie.getRatingCount()).isEqualTo(1L);
+        assertThat(updatedMovie.getAvgRating()).isEqualTo(5.0);
+
+        ratingService.deleteRating(user.getId(), saved.id());
+
+        entityManager.clear();
+        Movie movieAfterDelete = movieRepository.findById(movie.getId()).orElseThrow();
+        assertThat(movieAfterDelete.getRatingCount()).isZero();
+        assertThat(movieAfterDelete.getAvgRating()).isEqualTo(0.0);
+    }
 }

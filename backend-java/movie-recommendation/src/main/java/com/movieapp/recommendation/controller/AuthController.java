@@ -40,6 +40,12 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.ok(AuthResponse.from(result)));
     }
 
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(@Valid @RequestBody RefreshRequest request) {
+        AuthService.AuthResult result = authService.refresh(request.refreshToken());
+        return ResponseEntity.ok(ApiResponse.ok(AuthResponse.from(result)));
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout() {
         return ResponseEntity.ok(ApiResponse.ok("Logged out successfully", null));
@@ -51,6 +57,11 @@ public class AuthController {
 
             @NotBlank(message = "Password is required")
             String password) {
+    }
+
+    public record RefreshRequest(
+            @NotBlank(message = "Refresh token is required")
+            String refreshToken) {
     }
 
     public record RegisterRequest(

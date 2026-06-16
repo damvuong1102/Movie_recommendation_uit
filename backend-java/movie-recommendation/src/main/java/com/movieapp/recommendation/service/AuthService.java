@@ -64,6 +64,27 @@ public class AuthService {
         return buildAuthResult(user);
     }
 
+    @Transactional(readOnly = true)
+    public AuthResult refresh(String refreshToken) {
+        try {
+            String username = jwtService.extractUsername(refreshToken);
+            User user = userRepository.findByUsernameIgnoreCase(username)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.UNAUTHORIZED,
+                            "Invalid refresh token"));
+
+            if (!jwtService.isTokenValid(refreshToken, user)) {
+                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token");
+            }
+
+            return buildAuthResult(user);
+        } catch (ResponseStatusException ex) {
+            throw ex;
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid refresh token", ex);
+        }
+    }
+
     private AuthResult buildAuthResult(User user) {
         return new AuthResult(
                 jwtService.generateToken(user),
