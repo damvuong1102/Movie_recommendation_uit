@@ -41,9 +41,25 @@ public class MovieDataLoader implements ApplicationRunner {
     @Value("${app.dataset.ratings-path:classpath:ratings.csv}")
     private String ratingsPath;
 
+    @Value("${app.data-loader.enabled:false}")
+    private boolean dataLoaderEnabled;
+
     @Override
     @Transactional
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
+        if (!dataLoaderEnabled) {
+            log.info("Movie data loader is disabled.");
+            return;
+        }
+
+        try {
+            runLoader();
+        } catch (Exception ex) {
+            log.error("Movie data loader failed. The application will continue running.", ex);
+        }
+    }
+
+    private void runLoader() throws IOException {
         Map<Long, RatingStats> ratingStats = loadRatingStats();
 
         if (movieRepository.count() > 0) {
