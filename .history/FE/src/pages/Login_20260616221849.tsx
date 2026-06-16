@@ -339,7 +339,7 @@ export default function Login() {
             <Card className="max-w-md mx-auto">
               <CardHeader>
                 <CardTitle className="text-2xl font-bold">Chào Mừng Trở Lại</CardTitle>
-                <CardDescription>Đăng nhập lại vào tài khoản của bạn</CardDescription>
+                <CardDescription>Đăng nhập vào tài khoản của bạn</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleLogin} className="space-y-4">
@@ -410,12 +410,12 @@ export default function Login() {
                     <div className="flex items-start gap-3">
                       <Film className="w-6 h-6 text-primary shrink-0 mt-1" />
                       <div>
-                        <h3 className="mb-2 font-bold text-foreground">Tại sao nên chọn Movies4You?</h3>
+                        <h3 className="mb-2 font-bold text-foreground">Tại sao nên chọn Phim Đúng Gu?</h3>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                           <li>• Đề xuất danh sách phim phù hợp theo sở thích cá nhân</li>
-                          <li>• Đánh giá và bình luận về các bộ phim thịnh hành</li>
-                          <li>• Tự động ghi nhớ lịch sử xem phim cá nhân</li>
-                          <li>• Cập nhật nhanh chóng xu hướng điện ảnh</li>
+                          <li>• Đánh giá và để lại bình luận về các bộ phim yêu thích</li>
+                          <li>• Tự động ghi nhớ và theo dõi lịch sử xem phim cá nhân</li>
+                          <li>• Cập nhật nhanh chóng xu hướng điện ảnh và các viên ngọc ẩn</li>
                         </ul>
                       </div>
                     </div>

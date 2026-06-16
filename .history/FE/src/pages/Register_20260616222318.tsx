@@ -226,19 +226,6 @@ export default function Register() {
 
           <CardContent>
             <form onSubmit={handleRegister} className="space-y-4">
-
-              {/* Tên hiển thị */}
-              <div className="space-y-2">
-                <Label htmlFor="displayName">Tên người dùng</Label>
-                <Input
-                  id="displayName"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Ví dụ: Nguyễn Văn A"
-                  disabled={loading}
-                  required 
-                />
-              </div>
               
               {/* Tên đăng nhập */}
               <div className="space-y-2">
@@ -247,7 +234,7 @@ export default function Register() {
                   id="username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Ví dụ: nguyenvana"
+                  placeholder="Ví dụ: johndoe"
                   disabled={loading}
                   required 
                 />
@@ -261,7 +248,20 @@ export default function Register() {
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Ví dụ: nguyenvana@example.com"
+                  placeholder="vi_du@example.com"
+                  disabled={loading}
+                  required 
+                />
+              </div>
+
+              {/* Tên hiển thị */}
+              <div className="space-y-2">
+                <Label htmlFor="displayName">Tên hiển thị</Label>
+                <Input
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Ví dụ: Nguyễn Văn A"
                   disabled={loading}
                   required 
                 />
@@ -273,10 +273,10 @@ export default function Register() {
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"} 
+                    type={showPassword ? "text" : "password"} // Thay đổi kiểu hiển thị linh hoạt
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Tối thiểu 6 ký tự, phải có chữ và số"
+                    placeholder="Tối thiểu 6 ký tự"
                     disabled={loading}
                     required 
                     minLength={6}   
@@ -303,7 +303,7 @@ export default function Register() {
                     type={showConfirmPassword ? "text" : "password"} // Thay đổi kiểu hiển thị linh hoạt
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Nhập lại mật khẩu"
+                    placeholder="Nhập lại mật khẩu phía trên"
                     disabled={loading}
                     required 
                     minLength={6}   

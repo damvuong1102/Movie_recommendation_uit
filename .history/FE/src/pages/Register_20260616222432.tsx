@@ -273,7 +273,7 @@ export default function Register() {
                 <div className="relative">
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"} 
+                    type={showPassword ? "text" : "password"} // Thay đổi kiểu hiển thị linh hoạt
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Tối thiểu 6 ký tự, phải có chữ và số"
@@ -303,7 +303,7 @@ export default function Register() {
                     type={showConfirmPassword ? "text" : "password"} // Thay đổi kiểu hiển thị linh hoạt
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Nhập lại mật khẩu"
+                    placeholder="Nhập lại mật khẩu phía trên"
                     disabled={loading}
                     required 
                     minLength={6}   
