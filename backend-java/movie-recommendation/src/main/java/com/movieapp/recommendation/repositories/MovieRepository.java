@@ -31,8 +31,11 @@ public interface MovieRepository extends JpaRepository<Movie, Long> {
     @Modifying(flushAutomatically = true)
     @Query(
             "UPDATE Movie m SET" +
-                    " m.avgRating = COALESCE((SELECT AVG(r.rating) FROM Rating r WHERE r.movie = m), 0.0)," +
-                    " m.ratingCount = (SELECT COUNT(r) FROM Rating r WHERE r.movie = m)," +
+                    " m.avgRating = CASE WHEN (COALESCE(m.baselineRatingCount, 0) + (SELECT COUNT(r) FROM Rating r WHERE r.movie = m)) = 0" +
+                    " THEN 0.0 ELSE ((COALESCE(m.baselineAvgRating, 0.0) * COALESCE(m.baselineRatingCount, 0))" +
+                    " + COALESCE((SELECT SUM(r.rating) FROM Rating r WHERE r.movie = m), 0.0))" +
+                    " / (COALESCE(m.baselineRatingCount, 0) + (SELECT COUNT(r) FROM Rating r WHERE r.movie = m)) END," +
+                    " m.ratingCount = COALESCE(m.baselineRatingCount, 0) + (SELECT COUNT(r) FROM Rating r WHERE r.movie = m)," +
                     " m.updatedAt = CURRENT_TIMESTAMP" +
                     " WHERE m.id = :movieId"
     )

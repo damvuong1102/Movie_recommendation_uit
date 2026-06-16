@@ -69,13 +69,21 @@ public class Movie {
     @Builder.Default
     private Long ratingCount = 0L;
 
+    @Column(name = "baseline_avg_rating", precision = 3)
+    @Builder.Default
+    private Double baselineAvgRating = 0.0;
+
+    @Column(name = "baseline_rating_count")
+    @Builder.Default
+    private Long baselineRatingCount = 0L;
+
     @Column(name = "popularity")
     private Double popularity;
 
     @Column(name = "vote_count")
     private Integer voteCount;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at")

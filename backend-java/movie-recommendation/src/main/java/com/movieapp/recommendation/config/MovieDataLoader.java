@@ -21,8 +21,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @Slf4j
@@ -36,10 +38,32 @@ public class MovieDataLoader implements ApplicationRunner {
     @Value("${app.dataset.movies-path:classpath:movies_ready_for_db.csv}")
     private String moviesPath;
 
+    @Value("${app.dataset.ratings-path:classpath:ratings.csv}")
+    private String ratingsPath;
+
+    @Value("${app.data-loader.enabled:false}")
+    private boolean dataLoaderEnabled;
+
     @Override
     @Transactional
-    public void run(ApplicationArguments args) throws Exception {
+    public void run(ApplicationArguments args) {
+        if (!dataLoaderEnabled) {
+            log.info("Movie data loader is disabled.");
+            return;
+        }
+
+        try {
+            runLoader();
+        } catch (Exception ex) {
+            log.error("Movie data loader failed. The application will continue running.", ex);
+        }
+    }
+
+    private void runLoader() throws IOException {
+        Map<Long, RatingStats> ratingStats = loadRatingStats();
+
         if (movieRepository.count() > 0) {
+            backfillRatingBaselines(ratingStats);
             log.info("Skipping movie seed because movies table already has data.");
             return;
         }
@@ -51,15 +75,76 @@ public class MovieDataLoader implements ApplicationRunner {
         }
 
         try (BufferedReader reader = seedSource.reader()) {
-            List<Movie> movies = loadMovies(reader);
+            List<Movie> movies = loadMovies(reader, ratingStats);
             movieRepository.saveAll(movies);
             log.info("Seeded {} movies from {}.", movies.size(), seedSource.description());
         }
     }
 
+    private Map<Long, RatingStats> loadRatingStats() throws IOException {
+        MovieSeedSource seedSource = openSeedSource(ratingsPath);
+        if (seedSource == null) {
+            log.warn("Rating seed file not found at {}. Seeded movies will start with avgRating 0.0.", ratingsPath);
+            return Map.of();
+        }
+
+        Map<Long, RatingStats> stats = new HashMap<>();
+        try (BufferedReader reader = seedSource.reader()) {
+            String header = reader.readLine();
+            if (header == null) {
+                return stats;
+            }
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                List<String> columns = parseCsvLine(line);
+                if (columns.size() < 3) {
+                    continue;
+                }
+
+                Long movielensId = parseLong(columns.get(1));
+                Double rating = parseDouble(columns.get(2));
+                if (movielensId == null || rating == null) {
+                    continue;
+                }
+
+                stats.computeIfAbsent(movielensId, ignored -> new RatingStats()).add(rating);
+            }
+        }
+
+        log.info("Loaded rating baselines for {} movies from {}.", stats.size(), seedSource.description());
+        return stats;
+    }
+
+    private void backfillRatingBaselines(Map<Long, RatingStats> ratingStats) {
+        if (ratingStats.isEmpty()) {
+            return;
+        }
+
+        int updated = 0;
+        for (Map.Entry<Long, RatingStats> entry : ratingStats.entrySet()) {
+            Movie movie = movieRepository.findByMovielensId(entry.getKey()).orElse(null);
+            if (movie == null) {
+                continue;
+            }
+
+            RatingStats stats = entry.getValue();
+            movie.setBaselineAvgRating(stats.average());
+            movie.setBaselineRatingCount(stats.count());
+            movieRepository.recalculateRating(movie.getId());
+            updated++;
+        }
+
+        log.info("Backfilled rating baselines from CSV for {} movies.", updated);
+    }
+
     private MovieSeedSource openMovieSeedSource() throws IOException {
-        if (moviesPath.contains(":")) {
-            Resource resource = resourceLoader.getResource(moviesPath);
+        return openSeedSource(moviesPath);
+    }
+
+    private MovieSeedSource openSeedSource(String path) throws IOException {
+        if (path.contains(":")) {
+            Resource resource = resourceLoader.getResource(path);
             if (!resource.exists()) {
                 return null;
             }
@@ -69,7 +154,7 @@ public class MovieDataLoader implements ApplicationRunner {
                     new BufferedReader(new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8)));
         }
 
-        Path csvPath = Paths.get(moviesPath).toAbsolutePath().normalize();
+        Path csvPath = Paths.get(path).toAbsolutePath().normalize();
         if (!Files.exists(csvPath)) {
             return null;
         }
@@ -77,7 +162,7 @@ public class MovieDataLoader implements ApplicationRunner {
         return new MovieSeedSource(csvPath.toString(), Files.newBufferedReader(csvPath, StandardCharsets.UTF_8));
     }
 
-    private List<Movie> loadMovies(BufferedReader reader) throws IOException {
+    private List<Movie> loadMovies(BufferedReader reader, Map<Long, RatingStats> ratingStats) throws IOException {
         List<Movie> movies = new ArrayList<>();
         Set<Long> movielensIds = new HashSet<>();
         Set<Long> tmdbIds = new HashSet<>();
@@ -101,13 +186,17 @@ public class MovieDataLoader implements ApplicationRunner {
                 continue;
             }
 
+            RatingStats stats = ratingStats.getOrDefault(movielensId, RatingStats.empty());
+
             movies.add(Movie.builder()
                     .movielensId(movielensId)
                     .title(columns.get(1).trim())
                     .genres(blankToNull(columns.get(2)))
                     .tmdbId(tmdbId)
-                    .avgRating(0.0)
-                    .ratingCount(0L)
+                    .avgRating(stats.average())
+                    .ratingCount(stats.count())
+                    .baselineAvgRating(stats.average())
+                    .baselineRatingCount(stats.count())
                     .build());
         }
 
@@ -153,10 +242,40 @@ public class MovieDataLoader implements ApplicationRunner {
         return Long.valueOf(value.trim());
     }
 
+    private static Double parseDouble(String value) {
+        if (!StringUtils.hasText(value)) {
+            return null;
+        }
+
+        return Double.valueOf(value.trim());
+    }
+
     private static String blankToNull(String value) {
         return StringUtils.hasText(value) ? value.trim() : null;
     }
 
     private record MovieSeedSource(String description, BufferedReader reader) {
+    }
+
+    private static final class RatingStats {
+        private double sum;
+        private long count;
+
+        private static RatingStats empty() {
+            return new RatingStats();
+        }
+
+        private void add(double rating) {
+            sum += rating;
+            count++;
+        }
+
+        private double average() {
+            return count == 0 ? 0.0 : sum / count;
+        }
+
+        private long count() {
+            return count;
+        }
     }
 }

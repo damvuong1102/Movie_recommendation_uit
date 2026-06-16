@@ -49,6 +49,31 @@ public class RatingService {
         return RatingResult.from(savedRating);
     }
 
+    @Transactional
+    public RatingResult updateRating(Long userId, Long ratingId, RatingUpdateCommand command) {
+        Rating rating = ratingRepository.findByIdAndUser_Id(ratingId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rating not found"));
+
+        rating.setRating(command.rating());
+        rating.setReview(command.review());
+
+        Rating savedRating = ratingRepository.saveAndFlush(rating);
+        movieRepository.recalculateRating(savedRating.getMovie().getId());
+
+        return RatingResult.from(savedRating);
+    }
+
+    @Transactional
+    public void deleteRating(Long userId, Long ratingId) {
+        Rating rating = ratingRepository.findByIdAndUser_Id(ratingId, userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rating not found"));
+        Long movieId = rating.getMovie().getId();
+
+        ratingRepository.delete(rating);
+        ratingRepository.flush();
+        movieRepository.recalculateRating(movieId);
+    }
+
     @Transactional(readOnly = true)
     public Page<RatingResult> findMovieRatings(Long movieId, Pageable pageable) {
         if (!movieRepository.existsById(movieId)) {
@@ -103,6 +128,11 @@ public class RatingService {
     public record RatingCommand(
             Long movieId,
             Long tmdbId,
+            Double rating,
+            String review) {
+    }
+
+    public record RatingUpdateCommand(
             Double rating,
             String review) {
     }

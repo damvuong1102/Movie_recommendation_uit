@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,6 +53,36 @@ public class RatingController {
         return ResponseEntity.ok(ApiResponse.ok("Rating saved", ratingService.rateMovie(user.getId(), command)));
     }
 
+    @PutMapping("/ratings/{id}")
+    public ResponseEntity<ApiResponse<RatingService.RatingResult>> updateRating(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id,
+            @Valid @RequestBody RatingUpdateRequest request) {
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+        }
+
+        RatingService.RatingUpdateCommand command = new RatingService.RatingUpdateCommand(
+                request.rating(),
+                request.review());
+
+        return ResponseEntity.ok(ApiResponse.ok("Rating updated", ratingService.updateRating(user.getId(), id, command)));
+    }
+
+    @DeleteMapping("/ratings/{id}")
+    public ResponseEntity<ApiResponse<Void>> deleteRating(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id) {
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication is required");
+        }
+
+        ratingService.deleteRating(user.getId(), id);
+        return ResponseEntity.ok(ApiResponse.ok("Rating deleted", null));
+    }
+
     @GetMapping("/movies/{movieId}/ratings")
     public ResponseEntity<ApiResponse<PageResponse<RatingService.RatingResult>>> getMovieRatings(
             @PathVariable Long movieId,
@@ -68,6 +100,15 @@ public class RatingController {
             Long movieId,
             Long tmdbId,
 
+            @NotNull(message = "Rating is required")
+            @DecimalMin(value = "1.0", message = "Rating must be at least 1")
+            @DecimalMax(value = "5.0", message = "Rating must be at most 5")
+            Double rating,
+
+            String review) {
+    }
+
+    public record RatingUpdateRequest(
             @NotNull(message = "Rating is required")
             @DecimalMin(value = "1.0", message = "Rating must be at least 1")
             @DecimalMax(value = "5.0", message = "Rating must be at most 5")

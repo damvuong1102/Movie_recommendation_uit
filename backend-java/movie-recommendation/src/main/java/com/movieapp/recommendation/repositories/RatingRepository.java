@@ -18,6 +18,8 @@ public interface RatingRepository extends JpaRepository<Rating, Long> {
 
     Optional<Rating> findByUserAndMovie(User user, Movie movie);
 
+    Optional<Rating> findByIdAndUser_Id(Long id, Long userId);
+
     Optional<Rating> findByUser_IdAndMovie_Id(Long userId, Long movieId);
 
     Page<Rating> findByUser_Id(Long userId, Pageable pageable);

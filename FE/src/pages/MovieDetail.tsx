@@ -74,9 +74,9 @@ export default function MovieDetail() {
     if (!movie) return;
     setRatingsLoading(true);
     try {
-      // SỬA TẠI ĐÂY: Dùng movie.id chuẩn của Database để refresh chính xác dữ liệu bộ phim đó
+      // Movie detail endpoint uses tmdbId; ratings endpoint uses the database movie id.
       const [movieRes, ratingsRes] = await Promise.all([
-        getMovieById(movie.id),
+        getMovieById(movie.tmdbId ?? Number(id)),
         getMovieRatings(movie.id),
       ]);
 
@@ -219,7 +219,11 @@ export default function MovieDetail() {
           {/* Form gửi đánh giá */}
           <div>
             {isAuthenticated ? (
-              <RatingSubmit movieId={movie.id} onSuccess={refreshAfterReview} />
+              <RatingSubmit
+                movieId={movie.id}
+                tmdbId={movie.tmdbId}
+                onSuccess={refreshAfterReview}
+              />
             ) : (
               <div className="border rounded-lg p-6 bg-muted/30">
                 <h3 className="text-lg font-medium mb-2">Want to share your thoughts?</h3>
