@@ -17,7 +17,6 @@ type AuthContextType = {
   login: (user: User, token: string, refreshToken?: string) => void;
   logout: () => void;
   isAuthenticated: boolean;
-  /** True while we are reading localStorage on first mount. */
   initializing: boolean;
 };
 
@@ -38,14 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(JSON.parse(storedUser));
         setToken(storedToken);
       } catch {
-        // Corrupt localStorage — clear it
         localStorage.removeItem("user");
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
       }
     }
 
-    // Finished reading localStorage — ProtectedRoute can now make a decision
     setInitializing(false);
   }, []);
 
@@ -54,7 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const handleForceLogout = () => {
       setUser(null);
       setToken(null);
-      // State is already cleared in localStorage by apiFetch before the event
     };
 
     window.addEventListener("auth:logout", handleForceLogout);

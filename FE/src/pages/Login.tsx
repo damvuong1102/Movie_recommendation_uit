@@ -1,210 +1,6 @@
-// // src/pages/Login.tsx
-
-// import { Film, Star, User, Lock } from "lucide-react";
-// import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
-// import { Button } from "../components/ui/button";
-// import { Input } from "../components/ui/input";
-// import { Label } from "../components/ui/label";
-// import { Separator } from "../components/ui/separator";
-
-// import Navbar from "../components/layout/Navbar";
-// import { login as loginAPI } from "../services/authService";
-// import { useAuth } from "../context/AuthContext";
-// import { useToast } from "../context/ToastContext";
-
-// import { useState, useEffect } from "react";
-// import { useNavigate, Link, useLocation } from "react-router-dom";
-
-// const topRatedMovies = [
-//   { id: 1, title: "The Shawshank Redemption", year: 1994, rating: 4.7,
-//     imageUrl: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=300&h=450&fit=crop" },
-//   { id: 2, title: "The Godfather", year: 1972, rating: 4.6,
-//     imageUrl: "https://images.unsplash.com/photo-1594908900066-3f47337549d8?w=300&h=450&fit=crop" },
-//   { id: 3, title: "The Dark Knight", year: 2008, rating: 4.5,
-//     imageUrl: "https://images.unsplash.com/photo-1509347528160-9a9e33742cdb?w=300&h=450&fit=crop" },
-//   { id: 4, title: "Inception", year: 2010, rating: 4.4,
-//     imageUrl: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=300&h=450&fit=crop" },
-// ];
-
-// export default function Login() {
-//   const [username, setUsername] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [loading,  setLoading]  = useState(false);
-//   const [validationError, setValidationError] = useState("");
-
-//   const navigate  = useNavigate();
-//   const location  = useLocation();
-//   const { login, isAuthenticated } = useAuth();
-//   const { toast } = useToast();
-
-//   useEffect(() => {
-//     if (isAuthenticated) navigate("/home");
-//   }, [isAuthenticated, navigate]);
-
-//   const handleLogin = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     setValidationError("");
-
-//     if (!username || !password) {
-//       setValidationError("Please enter username and password");
-//       return;
-//     }
-
-//     setLoading(true);
-//     try {
-//       const res = await loginAPI(username, password);
-
-//       if (res.success) {
-//         const { accessToken, refreshToken, user } = res.data;
-//         login(user, accessToken, refreshToken);
-//         const from = (location.state as { from?: string })?.from || "/home";
-//         navigate(from, { replace: true });
-//       } else {
-//         toast.error(res.message || "Login failed");
-//       }
-//     } catch (err: any) {
-//       toast.error(err.message || "Login failed");
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-background">
-//       <Navbar />
-
-//       <main className="container mx-auto px-4 py-12">
-//         <div className="grid lg:grid-cols-2 gap-12 items-stretch max-w-7xl mx-auto">
-
-//           {/* Movie preview grid */}
-//           <div className="order-2 lg:order-1">
-//             <div className="mb-8">
-//               <h2 className="mb-2">Top Rated Movies</h2>
-//               <p className="text-muted-foreground">Login to discover your recommended movies</p>
-//             </div>
-//             <div className="grid grid-cols-2 gap-4">
-//               {topRatedMovies.map((movie) => (
-//                 <Link to={`/movie/${movie.id}`} key={movie.id} className="group cursor-pointer block">
-//                   <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2 bg-muted">
-//                     <img
-//                       src={movie.imageUrl}
-//                       alt={movie.title}
-//                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-//                     />
-//                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-//                   </div>
-//                   <h4 className="line-clamp-1 mb-1">{movie.title}</h4>
-//                   <div className="flex items-center justify-between text-sm">
-//                     <span className="text-muted-foreground">{movie.year}</span>
-//                     <div className="flex items-center gap-1">
-//                       <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-//                       <span>{movie.rating.toFixed(1)}</span>
-//                     </div>
-//                   </div>
-//                 </Link>
-//               ))}
-//             </div>
-//           </div>
-
-//           {/* Login card */}
-//           <div className="order-1 lg:order-2 lg:sticky lg:top-24">
-//             <Card className="max-w-md mx-auto">
-//               <CardHeader>
-//                 <CardTitle>Welcome Back</CardTitle>
-//                 <CardDescription>Sign in to your CineStream account</CardDescription>
-//               </CardHeader>
-//               <CardContent>
-//                 <form onSubmit={handleLogin} className="space-y-4">
-//                   <div className="space-y-2">
-//                     <Label htmlFor="username">Username</Label>
-//                     <div className="relative">
-//                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-//                       <Input
-//                         id="username"
-//                         type="text"
-//                         placeholder="Enter your username"
-//                         className="pl-9"
-//                         autoComplete="username"
-//                         disabled={loading}
-//                         value={username}
-//                         onChange={(e) => setUsername(e.target.value)}
-//                       />
-//                     </div>
-//                   </div>
-
-//                   <div className="space-y-2">
-//                     <Label htmlFor="password">Password</Label>
-//                     <div className="relative">
-//                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-//                       <Input
-//                         id="password"
-//                         type="password"
-//                         placeholder="Enter your password"
-//                         className="pl-9"
-//                         autoComplete="current-password"
-//                         disabled={loading}
-//                         value={password}
-//                         onChange={(e) => setPassword(e.target.value)}
-//                       />
-//                     </div>
-//                   </div>
-
-//                   {/* Inline error only for field validation */}
-//                   {validationError && (
-//                     <p className="text-sm text-red-500">{validationError}</p>
-//                   )}
-
-//                   <div className="flex items-center justify-end">
-//                     <Button variant="link" className="px-0 text-sm">
-//                       Forgot password?
-//                     </Button>
-//                   </div>
-
-//                   <Button type="submit" className="w-full" size="lg" disabled={loading}>
-//                     {loading ? "Logging in..." : "Log In"}
-//                   </Button>
-
-//                   <Separator />
-
-//                   <div className="text-center text-sm text-muted-foreground">
-//                     <span>Don't have an account?</span>
-//                     <Button
-//                       type="button"
-//                       variant="link"
-//                       className="px-1 h-auto"
-//                       onClick={() => navigate("/register")}
-//                     >
-//                       Sign up
-//                     </Button>
-//                   </div>
-
-//                   <div className="mt-8 p-6 bg-muted/50 rounded-lg">
-//                     <div className="flex items-start gap-3">
-//                       <Film className="w-6 h-6 text-primary shrink-0 mt-1" />
-//                       <div>
-//                         <h3 className="mb-2">Why Join CineStream?</h3>
-//                         <ul className="space-y-2 text-sm text-muted-foreground">
-//                           <li>• Get personalized movie recommendations</li>
-//                           <li>• Rate and review your favorite films</li>
-//                           <li>• Track your watch history</li>
-//                           <li>• Discover trending movies and hidden gems</li>
-//                         </ul>
-//                       </div>
-//                     </div>
-//                   </div>
-//                 </form>
-//               </CardContent>
-//             </Card>
-//           </div>
-//         </div>
-//       </main>
-//     </div>
-//   );
-// }
-
 // src/pages/Login.tsx
 
-import { Film, Star, User, Lock } from "lucide-react";
+import { Film, User, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -213,13 +9,14 @@ import { Separator } from "../components/ui/separator";
 
 import Navbar from "../components/layout/Navbar";
 import { login as loginAPI } from "../services/authService";
-import { getMovies } from "../services/movieService"; // Thêm hàm fetch phim từ DB
+import { getMovies } from "../services/movieService"; 
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { MovieSummary } from "../types/movie"; // Thêm type để kiểm soát dữ liệu
+import { MovieSummary } from "../types/movie"; 
 
 import { useState, useEffect } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { MovieCard } from "../components/movie/MovieCard";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -240,14 +37,14 @@ export default function Login() {
     if (isAuthenticated) navigate("/home");
   }, [isAuthenticated, navigate]);
 
-  // FETCH PHIM ĐỘNG: Lấy dữ liệu phim Top Rated thật từ database giống như trang Home
+  // FETCH PHIM ĐỘNG
   useEffect(() => {
     async function fetchTopMovies() {
       try {
         const res = await getMovies({
           type: "topRated",
           page: 0,
-          size: 4, // Bạn có thể chỉnh lên 6 hoặc 8 phim tùy thuộc giao diện mong muốn
+          size: 6, 
         });
         setMovies(res.data.content);
       } catch (err: any) {
@@ -297,7 +94,7 @@ export default function Login() {
           {/* Khung hiển thị phim nổi bật lấy từ DB */}
           <div className="order-2 lg:order-1">
             <div className="mb-8">
-              <h2 className="mb-2 text-2xl font-bold">Phim Được Đánh Giá Cao</h2>
+              <h2 className="mb-2 text-2xl font-bold">Phim Đang Được Yêu Thích</h2>
               <p className="text-muted-foreground">Đăng nhập ngay để khám phá kho phim dành riêng cho bạn</p>
             </div>
 
@@ -308,27 +105,7 @@ export default function Login() {
             ) : (
               <div className="grid grid-cols-2 gap-4">
                 {movies.map((movie) => (
-                  <Link to={`/movie/${movie.id}`} key={movie.id} className="group cursor-pointer block">
-                    <div className="relative aspect-[2/3] rounded-lg overflow-hidden mb-2 bg-muted">
-                      <img
-                        src={movie.imageUrl}
-                        alt={movie.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors" />
-                    </div>
-                    <h4 className="line-clamp-1 mb-1 font-semibold">{movie.title}</h4>
-                    <div className="flex items-center justify-between text-sm">
-                      {/* Xử lý an toàn nếu cơ sở dữ liệu trả về ngày phát hành thay vì năm đơn thuần */}
-                      <span className="text-muted-foreground">
-                        {movie.year || (movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : "N/A")}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                        <span>{movie.rating ? movie.rating.toFixed(1) : "0.0"}</span>
-                      </div>
-                    </div>
-                  </Link>
+                  <MovieCard key={movie.id} {...movie} />
                 ))}
               </div>
             )}
@@ -380,12 +157,12 @@ export default function Login() {
                   {validationError && (
                     <p className="text-sm text-red-500 font-medium">{validationError}</p>
                   )}
-
+                  {/* 
                   <div className="flex items-center justify-end">
                     <Button variant="link" className="px-0 text-sm hover:underline">
                       Quên mật khẩu?
                     </Button>
-                  </div>
+                  </div> */}
 
                   <Button type="submit" className="w-full font-semibold" size="lg" disabled={loading}>
                     {loading ? "Đang xử lý..." : "Đăng Nhập"}

@@ -1,6 +1,6 @@
 // src/lib/api.ts
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://movie4you-hqf0.onrender.com").replace(/\/$/, "");
+const BASE_URL = "https://movie4you-hqf0.onrender.com".replace(/\/$/, "");
 
 let refreshPromise: Promise<string> | null = null;
 

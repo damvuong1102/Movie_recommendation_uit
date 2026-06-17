@@ -10,17 +10,14 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Lấy cấu hình mặc định từ localStorage, nếu chưa có thì mặc định là dark hoặc light tùy bạn
+  // Lấy cấu hình mặc định từ localStorage, nếu chưa có thì mặc định là dark
   const [theme, setThemeState] = useState<Theme>(
     () => (localStorage.getItem("cinestream:theme") as Theme) || "dark"
   );
 
   useEffect(() => {
     const root = window.document.documentElement;
-    
-    // Xóa cả 2 class cũ để tránh bị xung đột
     root.classList.remove("light", "dark");
-    // Thêm class hiện tại vào thẻ html
     root.classList.add(theme);
   }, [theme]);
 

@@ -354,7 +354,7 @@ export default function Home() {
               hasMore={sections.recommended.page < sections.recommended.totalPages}
               loadingMore={sections.recommended.loadingMore}
               onLoadMore={() => loadMore("recommended")}
-              showRating
+              // showRating
             />
           )}
 
@@ -372,6 +372,7 @@ export default function Home() {
               title="Đã Xem Gần Đây"
               icon={Clock}
               movies={recentlyWatched}
+              showRating={true}
             />
           )}
 

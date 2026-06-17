@@ -28,7 +28,6 @@ export function ReviewCard({
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             <Avatar>
-              {/* API doesn't return avatarUrl — use initials fallback */}
               <AvatarFallback>{username.charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>

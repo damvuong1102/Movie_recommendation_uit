@@ -24,9 +24,5 @@ export default function ProtectedRoute({
     );
   }
 
-  // if (!isAuthenticated) {
-  //   return <Navigate to="/login" state={{ from: location.pathname }} replace />;
-  // }
-
   return <>{children}</>;
 }
