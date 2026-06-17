@@ -132,7 +132,7 @@ export default function MovieDetail() {
             />
             <Button className="w-full mt-4" size="lg">
               <Play className="w-5 h-5 mr-2 fill-current" />
-              Xem Ngay
+              Xem 
             </Button>
           </div>
 

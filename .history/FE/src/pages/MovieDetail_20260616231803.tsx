@@ -46,6 +46,7 @@ export default function MovieDetail() {
           ratingCount: movieData.ratingCount,
         });
 
+        // Bước 2: SỬA TẠI ĐÂY - Dùng movieData.id thực tế từ Database để gọi API Ratings
         try {
           const ratingsRes = await getMovieRatings(movieData.id);
           if (ratingsRes?.data) {
@@ -95,14 +96,14 @@ export default function MovieDetail() {
   if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground animate-pulse">
-        Đang tải chi tiết phim...
+        Loading movie details...
       </div>
     );
 
   if (notFound || !movie)
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <h1 className="text-xl font-semibold">Phim không tồn tại</h1>
+        <h1 className="text-xl font-semibold">Movie not found</h1>
       </div>
     );
 
@@ -132,7 +133,7 @@ export default function MovieDetail() {
             />
             <Button className="w-full mt-4" size="lg">
               <Play className="w-5 h-5 mr-2 fill-current" />
-              Xem Ngay
+              Watch Now
             </Button>
           </div>
 
@@ -200,7 +201,7 @@ export default function MovieDetail() {
             <div className="space-y-4">
               {ratings.length === 0 && !ratingsLoading && (
                 <p className="text-sm text-muted-foreground italic">
-                  Chưa có đánh giá nào. Hãy là người đầu tiên chia sẻ!
+                  No reviews yet. Be the first to share your thoughts!
                 </p>
               )}
               {ratings.map((r) => (
@@ -225,9 +226,9 @@ export default function MovieDetail() {
               />
             ) : (
               <div className="border rounded-lg p-6 bg-muted/30">
-                <h3 className="text-lg font-medium mb-2">Muốn chia sẻ suy nghĩ của bạn?</h3>
+                <h3 className="text-lg font-medium mb-2">Want to share your thoughts?</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Đăng nhập để để lại đánh giá và xếp hạng cho bộ phim này.
+                  Log in to leave your review and rating for this movie.
                 </p>
                 <Button
                   onClick={() =>
@@ -235,7 +236,7 @@ export default function MovieDetail() {
                   }
                 >
                   <LogIn className="w-4 h-4 mr-2" />
-                  Đăng Nhập
+                  Log In
                 </Button>
               </div>
             )}

@@ -220,7 +220,6 @@ import { MovieSummary } from "../types/movie"; // Thêm type để kiểm soát 
 
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { MovieCard } from "../components/movie/MovieCard";
 
 export default function Login() {
   const [username, setUsername] = useState("");
@@ -295,8 +294,8 @@ export default function Login() {
       <main className="container mx-auto px-4 py-12">
         <div className="grid lg:grid-cols-2 gap-12 items-stretch max-w-7xl mx-auto">
 
-          {/* Khung hiển thị phim nổi bật lấy từ DB */}
-          {/* <div className="order-2 lg:order-1">
+          Khung hiển thị phim nổi bật lấy từ DB
+          <div className="order-2 lg:order-1">
             <div className="mb-8">
               <h2 className="mb-2 text-2xl font-bold">Phim Được Đánh Giá Cao</h2>
               <p className="text-muted-foreground">Đăng nhập ngay để khám phá kho phim dành riêng cho bạn</p>
@@ -320,7 +319,7 @@ export default function Login() {
                     </div>
                     <h4 className="line-clamp-1 mb-1 font-semibold">{movie.title}</h4>
                     <div className="flex items-center justify-between text-sm">
-                      {/* Xử lý an toàn nếu cơ sở dữ liệu trả về ngày phát hành thay vì năm đơn thuần
+                      {/* Xử lý an toàn nếu cơ sở dữ liệu trả về ngày phát hành thay vì năm đơn thuần */}
                       <span className="text-muted-foreground">
                         {movie.year || (movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : "N/A")}
                       </span>
@@ -333,27 +332,7 @@ export default function Login() {
                 ))}
               </div>
             )}
-          </div> */}
-
-<div className="order-2 lg:order-1">
-  <div className="mb-8">
-    <h2 className="mb-2 text-2xl font-bold">Phim Được Đánh Giá Cao</h2>
-    <p className="text-muted-foreground">Đăng nhập ngay để khám phá kho phim dành riêng cho bạn</p>
-  </div>
-
-  {moviesLoading ? (
-    <div className="text-center py-12 text-muted-foreground">Đang tải danh sách phim...</div>
-  ) : movies.length === 0 ? (
-    <div className="text-center py-12 text-muted-foreground">Không có phim nào để hiển thị.</div>
-  ) : (
-    /* Dùng đúng cấu trúc grid và Component như trang Home */
-    <div className="grid grid-cols-2 gap-4">
-      {movies.map((movie) => (
-        <MovieCard key={movie.id} {...movie} />
-      ))}
-    </div>
-  )}
-</div>
+          </div>
 
           {/* Khung Form Đăng nhập */}
           <div className="order-1 lg:order-2 lg:sticky lg:top-24">

@@ -220,7 +220,6 @@ import { MovieSummary } from "../types/movie"; // Thêm type để kiểm soát 
 
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
-import { MovieCard } from "../components/movie/MovieCard";
 
 export default function Login() {
   const [username, setUsername] = useState("");

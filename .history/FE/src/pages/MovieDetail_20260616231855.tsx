@@ -132,7 +132,7 @@ export default function MovieDetail() {
             />
             <Button className="w-full mt-4" size="lg">
               <Play className="w-5 h-5 mr-2 fill-current" />
-              Xem Ngay
+              Watch Now
             </Button>
           </div>
 
@@ -235,7 +235,7 @@ export default function MovieDetail() {
                   }
                 >
                   <LogIn className="w-4 h-4 mr-2" />
-                  Đăng Nhập
+                  Log In
                 </Button>
               </div>
             )}
