@@ -391,10 +391,10 @@ export default function MovieDetail() {
               alt={movie.title}
               className="w-full rounded-lg shadow-2xl border border-border/50"
             />
-            {/* <Button className="w-full mt-4 font-semibold" size="lg">
+            <Button className="w-full mt-4 font-semibold" size="lg">
               <Play className="w-5 h-5 mr-2 fill-current" />
               Xem Ngay
-            </Button> */}
+            </Button>
           </div>
 
           {/* Info */}
