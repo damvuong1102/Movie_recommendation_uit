@@ -9,13 +9,13 @@ import { Separator } from "../components/ui/separator";
 
 import Navbar from "../components/layout/Navbar";
 import { login as loginAPI } from "../services/authService";
-import { getMovies } from "../services/movieService"; 
+import { getMovies } from "../services/movieService"; // Thêm hàm fetch phim từ DB
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { MovieSummary } from "../types/movie"; 
+import { MovieSummary } from "../types/movie"; // Thêm type để kiểm soát dữ liệu
 
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { MovieCard } from "../components/movie/MovieCard";
 
 export default function Login() {

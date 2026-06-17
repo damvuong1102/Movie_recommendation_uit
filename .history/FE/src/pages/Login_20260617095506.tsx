@@ -9,7 +9,7 @@ import { Separator } from "../components/ui/separator";
 
 import Navbar from "../components/layout/Navbar";
 import { login as loginAPI } from "../services/authService";
-import { getMovies } from "../services/movieService"; 
+import { getMovies } from "../services/movieService"; // Thêm hàm fetch phim từ DB
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { MovieSummary } from "../types/movie"; 
