@@ -113,7 +113,7 @@ export function MovieSection({
               )
             : (
               <p className="col-span-5 text-sm text-muted-foreground text-center py-12">
-                No movies found. Try a different filter.
+                Không có phim nào để hiển thị. Thử thay đổi bộ lọc hoặc tìm kiếm khác.
               </p>
             )}
 

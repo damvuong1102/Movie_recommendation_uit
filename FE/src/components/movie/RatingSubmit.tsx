@@ -29,7 +29,7 @@ export function RatingSubmit({ movieId, tmdbId, onSuccess }: RatingSubmitProps) 
       setReview("");
       onSuccess?.();
     } catch (err: any) {
-      setError(err.message || "Failed to submit rating");
+      setError(err.message || "Không thể gửi đánh giá");
     } finally {
       setLoading(false);
     }
@@ -38,11 +38,11 @@ export function RatingSubmit({ movieId, tmdbId, onSuccess }: RatingSubmitProps) 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Leave Your Review</CardTitle>
+        <CardTitle>Hãy đánh giá phim này</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block mb-2">Your Rating</label>
+          <label className="block mb-2">Đánh giá của bạn</label>
           <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <Star
@@ -66,9 +66,9 @@ export function RatingSubmit({ movieId, tmdbId, onSuccess }: RatingSubmitProps) 
         </div>
 
         <div>
-          <label className="block mb-2">Your Review</label>
+          <label className="block mb-2">Đánh giá của bạn</label>
           <Textarea
-            placeholder="Share your thoughts about this movie..."
+            placeholder="Chia sẻ suy nghĩ của bạn về bộ phim này..."
             rows={5}
             value={review}
             onChange={(e) => setReview(e.target.value)}
@@ -81,7 +81,7 @@ export function RatingSubmit({ movieId, tmdbId, onSuccess }: RatingSubmitProps) 
           onClick={handleSubmit}
           disabled={loading || rating === 0 || review.trim() === ""}
         >
-          {loading ? "Submitting..." : "Submit Review"}
+          {loading ? "Submitting..." : "Gửi Đánh Giá"}
         </Button>
       </CardContent>
     </Card>
