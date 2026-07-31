@@ -1,139 +1,241 @@
-# Movies4You - Movie Recommendation UIT
+# 🎬 Movies4You — Movie Recommendation System
 
-Movies4You là ứng dụng gợi ý phim gồm giao diện React/Vite, API Spring Boot và dữ liệu phim/rating dùng cho bài toán đề xuất. Hệ thống hỗ trợ đăng ký, đăng nhập JWT, xem danh sách phim, lọc theo thể loại, tìm kiếm, xem chi tiết phim, đánh giá phim và lấy gợi ý cá nhân hóa.
+[![Live Demo](https://img.shields.io/badge/Live_Demo-GitHub_Pages-blue?style=for-the-badge\&logo=github)](https://dbthyy.github.io/recommend_movies_website/#/home)
+[![Backend](https://img.shields.io/badge/Backend-Spring_Boot-success?style=for-the-badge\&logo=springboot)](https://spring.io/projects/spring-boot)
+[![Frontend](https://img.shields.io/badge/Frontend-React_18-61DAFB?style=for-the-badge\&logo=react)](https://react.dev/)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL-blue?style=for-the-badge\&logo=postgresql)](https://www.postgresql.org/)
 
-## Mục lục
+**Movies4You** is a full-stack movie recommendation platform developed as a university project. The application enables users to discover movies, browse detailed information, submit ratings and reviews, and receive personalized movie recommendations based on their historical preferences.
 
-- [Tính năng chính](#tính-năng-chính)
-- [Công nghệ sử dụng](#công-nghệ-sử-dụng)
-- [Cấu trúc thư mục](#cấu-trúc-thư-mục)
-- [Yêu cầu môi trường](#yêu-cầu-môi-trường)
-- [Cấu hình biến môi trường](#cấu-hình-biến-môi-trường)
-- [Chạy dự án local](#chạy-dự-án-local)
-- [API chính](#api-chính)
-- [Dữ liệu và migration](#dữ-liệu-và-migration)
-- [Build và deploy](#build-và-deploy)
-- [Ghi chú phát triển](#ghi-chú-phát-triển)
+The project follows a modern client-server architecture using **React**, **Spring Boot**, and **PostgreSQL**, with movie metadata enriched through the **TMDB API**.
 
-## Tính năng chính
+🔗 **Live Demo:** https://dbthyy.github.io/recommend_movies_website/#/home
 
-- Xác thực người dùng bằng JWT access token và refresh token.
-- Danh sách phim có phân trang, tìm kiếm, lọc thể loại, top rated và trending.
-- Trang chi tiết phim theo `tmdbId`.
-- Đánh giá phim, chỉnh sửa đánh giá và xóa đánh giá.
-- Gợi ý phim theo người dùng dựa trên dữ liệu rating.
-- Tải dữ liệu phim/rating từ CSV khi bật data loader.
-- Frontend responsive, hỗ trợ build tĩnh ra thư mục `docs/` để deploy GitHub Pages.
 
-## Công nghệ sử dụng
 
-### Frontend
+# 📌 Table of Contents
 
-- React 18
-- Vite 6
-- TypeScript
-- Tailwind CSS 4
-- Radix UI, MUI, lucide-react
-- React Router
+* Overview
+* Features
+* Tech Stack
+* System Architecture
+* Frontend Demo
+* Project Structure
+* Prerequisites
+* Environment Variables
+* Local Setup
+* API Reference
+* Database & Data Pipeline
+* Build & Deployment
+* Development Notes
+* Contributors
+* License
 
-### Backend chính
 
-- Java 17
-- Spring Boot 4
-- Spring Web MVC
-- Spring Security
-- Spring Data JPA
-- Flyway
-- PostgreSQL/Neon
-- TMDB API
 
-### Backend Node
+# 📖 Overview
 
-Thư mục `backend-node/` là Express API được tách riêng. Backend Java trong `backend-java/movie-recommendation/` là backend chính đang khớp với frontend hiện tại.
+Movies4You was built to simplify movie discovery by combining traditional browsing features with personalized recommendations.
 
-## Cấu trúc thư mục
+Users can:
+
+* Create an account and securely authenticate using JWT.
+* Browse thousands of movies.
+* Search movies by keyword.
+* Filter movies by genre.
+* View trending and top-rated movies.
+* Read movie details.
+* Submit, edit, and delete ratings.
+* Receive personalized movie recommendations generated from historical rating data.
+
+
+
+# ✨ Features
+
+### 🔐 Authentication
+
+* JWT Access Token & Refresh Token authentication
+* Secure login and registration
+* Automatic token refresh
+
+### 🎬 Movie Discovery
+
+* Paginated movie catalog
+* Keyword search
+* Genre filtering
+* Trending movies
+* Top-rated movies
+
+### ⭐ Ratings & Reviews
+
+* Create ratings
+* Update ratings
+* Delete ratings
+* View community reviews
+
+### 🤖 Recommendation Engine
+
+* Personalized recommendations
+* Recommendation generation based on historical user ratings
+* Real-time recommendation endpoint
+
+### 📦 Data Pipeline
+
+* CSV dataset import
+* Flyway database migration
+* Optional automatic data loader
+
+### 📱 Responsive Frontend
+
+* Modern responsive UI
+* Built with React + Tailwind CSS
+* Static deployment via GitHub Pages
+
+
+
+# 🛠 Tech Stack
+
+| Layer               | Technologies                                                                                    |
+| - | -- |
+| Frontend            | React 18, Vite 6, TypeScript, Tailwind CSS 4, Radix UI, Material UI, Lucide Icons, React Router |
+| Backend             | Java 17, Spring Boot, Spring Security, Spring Data JPA, Flyway                                  |
+| Database            | PostgreSQL / Neon                                                                               |
+| Data Processing     | Python                                                                                          |
+| External API        | TMDB API                                                                                        |
+| Alternative Backend | Express.js (backend-node/)                                                                      |
+
+
+
+# 🏗 System Architecture
+
+```text
+                   React + Vite Frontend
+                           │
+                    HTTP REST + JWT
+                           │
+                  Spring Boot REST API
+                           │
+        ┌──────────────────┴──────────────────┐
+        │                                     │
+ PostgreSQL Database                    TMDB API
+(Movies, Users, Ratings)          (Metadata & Posters)
+```
+
+### Application Workflow
+
+1. Users interact with the React frontend.
+2. The frontend communicates with the backend through REST APIs secured by JWT authentication.
+3. Spring Boot processes requests and interacts with the PostgreSQL database.
+4. Movie posters and metadata are enriched through the TMDB API.
+5. Recommendation requests analyze user rating history and return personalized movie suggestions.
+
+
+
+# 📸 Frontend Demo
+
+## 🏠 Home Page
+<img width="900" alt="Screenshot 2026-06-17 105204" src="https://github.com/user-attachments/assets/0c2357a9-2a2d-44f0-a825-38c280192de2" />
+
+## 🎬 Movie Details
+<img width="900" alt="Screenshot 2026-06-17 105358" src="https://github.com/user-attachments/assets/54c3f810-f96b-42bc-8274-f24a2b370a87" />
+
+## 🔐 Authentication
+### Login
+<img width="900" alt="Screenshot 2026-06-17 105831" src="https://github.com/user-attachments/assets/c04ca274-7285-4dbc-9b5b-e4e54888d8d9" />
+
+### Register
+<img width="300" alt="Screenshot 2026-06-17 105904" src="https://github.com/user-attachments/assets/7a346f3c-e250-4fb9-a26f-d01d02a5fc92" />
+
+
+# 📂 Project Structure
 
 ```text
 Movie_recommendation_uit/
-├── FE/                              # React/Vite frontend
-├── backend-java/
-│   ├── technical_required_api.md    # Ghi chú yêu cầu API
-│   └── movie-recommendation/        # Spring Boot backend chính
-├── backend-node/                    # Express backend tách riêng
-├── Data-processing/                 # Dataset, notebook và script import
-├── docs/                            # Output build tĩnh của frontend
+│
+├── FE/                         # React + Vite frontend
+├── backend-java/               # Spring Boot backend
+│   └── movie-recommendation/
+├── backend-node/               # Alternative Express backend
+├── Data-processing/            # Data processing scripts & datasets
+├── docs/                       # GitHub Pages build output
 └── README.md
 ```
 
-## Yêu cầu môi trường
 
-- Node.js 18 trở lên
-- npm
-- Java JDK 17
-- Maven Wrapper đã có sẵn trong `backend-java/movie-recommendation/`
-- PostgreSQL hoặc Neon database
-- TMDB API token hoặc API key nếu muốn lấy ảnh/poster từ TMDB
+# ⚙️ Prerequisites
 
-## Cấu hình biến môi trường
+* Node.js 18+
+* npm
+* Java JDK 17
+* PostgreSQL or Neon Database
+* TMDB API Key / Access Token
 
-Không commit secret thật lên Git. File `.env` ở root chỉ nên dùng cho local.
 
-### Backend Java
+# 🔑 Environment Variables
 
-Các biến thường dùng:
+## Backend
 
 ```env
 PORT=10000
+
 SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:<port>/<database>?sslmode=require
 SPRING_DATASOURCE_USERNAME=<username>
 SPRING_DATASOURCE_PASSWORD=<password>
+
 SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
 SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
 SPRING_JPA_HIBERNATE_DDL_AUTO=update
 SPRING_JPA_SHOW_SQL=false
+
 JWT_SECRET=<base64-secret>
-CORS_ALLOWED_ORIGIN_PATTERNS=http://localhost:*,http://127.0.0.1:*,https://*.vercel.app,https://*.github.io,https://*.onrender.com
+
+CORS_ALLOWED_ORIGIN_PATTERNS=http://localhost:*,http://127.0.0.1:*,https://*.github.io,https://*.vercel.app,https://*.onrender.com
+
 TMDB_ACCESS_TOKEN=<tmdb-access-token>
 TMDB_API_KEY=<tmdb-api-key>
-APP_DATA_LOADER_ENABLED=false
+
 FLYWAY_ENABLED=true
+APP_DATA_LOADER_ENABLED=false
 ```
 
-Lưu ý: `application.properties` hiện đặt `server.port=${PORT:10000}`, vì vậy local backend mặc định chạy ở `http://localhost:10000`.
+By default, the backend runs on:
+
+```text
+http://localhost:10000
+```
 
 ### Frontend
-
-Frontend đọc API base URL từ biến Vite:
 
 ```env
 VITE_API_BASE_URL=http://localhost:10000
 ```
 
-Nếu không cấu hình, frontend sẽ dùng backend deploy mặc định được khai báo trong `FE/src/lib/api.ts`.
+If this variable is omitted, the frontend uses the default deployed backend configured in `FE/src/lib/api.ts`.
 
-## Chạy dự án local
 
-### 1. Chạy backend Java
+# 🚀 Local Setup
+
+## 1. Run the Spring Boot Backend
 
 ```bash
 cd backend-java/movie-recommendation
 ./mvnw spring-boot:run
 ```
 
-Trên Windows PowerShell:
+Windows PowerShell:
 
 ```powershell
-cd backend-java/movie-recommendation
 .\mvnw.cmd spring-boot:run
 ```
 
-Kiểm tra health check:
+Health Check
 
 ```text
 GET http://localhost:10000/actuator/health
 ```
 
-### 2. Chạy frontend
+
+## 2. Run the React Frontend
 
 ```bash
 cd FE
@@ -141,15 +243,15 @@ npm install
 npm run dev
 ```
 
-Vite thường chạy tại:
+Frontend:
 
 ```text
 http://localhost:5173
 ```
 
-### 3. Chạy backend Node nếu cần
 
-Backend Node là lựa chọn tách riêng:
+
+## 3. Run the Express Backend (Optional)
 
 ```bash
 cd backend-node
@@ -157,188 +259,184 @@ npm install
 npm run dev
 ```
 
-Trước khi chạy, copy `backend-node/.env.example` thành `.env` và điền database/TMDB/JWT.
+Copy `.env.example` to `.env` before starting the server.
 
-## API chính
+# 🔌 API Reference
 
-Base URL local của Java backend:
-
-```text
-http://localhost:10000
-```
-
-Tất cả API nghiệp vụ nằm dưới prefix `/api`.
-
-### Auth
-
-| Method | Endpoint | Mô tả |
-| --- | --- | --- |
-| POST | `/api/auth/register` | Đăng ký tài khoản |
-| POST | `/api/auth/login` | Đăng nhập |
-| POST | `/api/auth/refresh` | Làm mới access token |
-| POST | `/api/auth/logout` | Đăng xuất |
-
-Ví dụ đăng nhập:
-
-```json
-{
-  "username": "demo",
-  "password": "123456"
-}
-```
-
-### Movies
-
-| Method | Endpoint | Mô tả |
-| --- | --- | --- |
-| GET | `/api/movies` | Lấy danh sách phim |
-| GET | `/api/movies/{tmdbId}` | Lấy chi tiết phim theo TMDB ID |
-| GET | `/api/movies/tmdb/{tmdbId}` | Lấy chi tiết phim theo TMDB ID |
-| GET | `/api/genres` | Lấy danh sách thể loại |
-
-Query params hỗ trợ cho `/api/movies`:
-
-| Param | Mô tả |
-| --- | --- |
-| `page` | Trang hiện tại, mặc định `0` |
-| `size` | Số phim mỗi trang, mặc định `20`, tối đa `100` |
-| `query` | Từ khóa tìm kiếm |
-| `genre` | Lọc thể loại, ví dụ `Action` |
-| `type` | `topRated`, `trending`, `recommended` |
-| `minRatings` | Số lượng rating tối thiểu |
-
-Ví dụ:
+Base URL
 
 ```text
-GET /api/movies?page=0&size=20&type=topRated&genre=Drama
+http://localhost:10000/api
 ```
 
-### Ratings
+## Authentication
 
-| Method | Endpoint | Mô tả | Yêu cầu token |
-| --- | --- | --- | --- |
-| POST | `/api/ratings` | Tạo/cập nhật đánh giá phim | Có |
-| PUT | `/api/ratings/{id}` | Cập nhật đánh giá | Có |
-| DELETE | `/api/ratings/{id}` | Xóa đánh giá | Có |
-| GET | `/api/movies/{movieId}/ratings` | Lấy danh sách đánh giá của phim | Không |
+| Method | Endpoint         | Authentication |
+| ------ | -------- | -------------- |
+| POST   | `/auth/register` | Public         |
+| POST   | `/auth/login`    | Public         |
+| POST   | `/auth/refresh`  | Public         |
+| POST   | `/auth/logout`   | Public         |
 
-Ví dụ tạo rating:
 
-```json
-{
-  "movieId": 1,
-  "tmdbId": 550,
-  "rating": 4.5,
-  "review": "Phim rất đáng xem"
-}
+## Movies
+
+| Method | Endpoint                | Authentication |
+| ------ | -------- | -------------- |
+| GET    | `/movies`               | Public         |
+| GET    | `/movies/{tmdbId}`      | Public         |
+| GET    | `/movies/tmdb/{tmdbId}` | Public         |
+| GET    | `/genres`               | Public         |
+
+Supported query parameters:
+
+* page
+* size
+* query
+* genre
+* type
+* minRatings
+
+Example:
+
+```text
+GET /movies?page=0&size=20&type=topRated&genre=Drama
 ```
 
-### Users và recommendations
 
-| Method | Endpoint | Mô tả | Yêu cầu token |
-| --- | --- | --- | --- |
-| GET | `/api/users/me` | Lấy thông tin người dùng hiện tại | Có |
-| GET | `/api/recommendations/{userId}?limit=10` | Lấy gợi ý phim cho người dùng | Không |
+## Ratings
 
-## Dữ liệu và migration
+| Method | Endpoint                    | Authentication |
+| ------ | -------- | -------------- |
+| POST   | `/ratings`                  | JWT Required   |
+| PUT    | `/ratings/{id}`             | JWT Required   |
+| DELETE | `/ratings/{id}`             | JWT Required   |
+| GET    | `/movies/{movieId}/ratings` | Public         |
 
-Backend Java dùng Flyway migration tại:
+
+## Users & Recommendations
+
+| Method | Endpoint                             | Authentication |
+| ------ | -------- | -------------- |
+| GET    | `/users/me`                          | JWT Required   |
+| GET    | `/recommendations/{userId}?limit=10` | Public         |
+
+
+# 🗄 Database & Data Pipeline
+
+The backend manages database schema changes through **Flyway**.
+
+Migration files are located in:
 
 ```text
 backend-java/movie-recommendation/src/main/resources/db/migration/
 ```
 
-Các file dữ liệu CSV chính:
+Main datasets:
 
 ```text
-backend-java/movie-recommendation/src/main/resources/movies_ready_for_db.csv
-backend-java/movie-recommendation/src/main/resources/ratings.csv
-Data-processing/dataset/
+movies_ready_for_db.csv
+ratings.csv
 ```
 
-Data loader đọc đường dẫn từ:
+The automatic data loader imports CSV files into PostgreSQL.
+
+Enable data loading only during the initial database setup:
 
 ```env
-MOVIES_DATASET_PATH=classpath:movies_ready_for_db.csv
-RATINGS_DATASET_PATH=classpath:ratings.csv
 APP_DATA_LOADER_ENABLED=true
 ```
 
-Chỉ bật `APP_DATA_LOADER_ENABLED=true` khi cần seed dữ liệu. Sau khi database đã có dữ liệu, nên tắt để tránh thời gian khởi động lâu.
+Once the database has been seeded, disable it:
 
-## Build và deploy
+```env
+APP_DATA_LOADER_ENABLED=false
+```
 
-### Build frontend
+to reduce application startup time.
+
+
+
+# 🚀 Build & Deployment
+
+## Frontend
 
 ```bash
 cd FE
 npm run build
 ```
 
-Theo `FE/vite.config.ts`, output được xuất ra:
+The production build is generated in:
 
 ```text
 docs/
 ```
 
-`base` hiện là:
+which is deployed through GitHub Pages.
 
-```text
-/recommend_movies_website/
-```
 
-Cấu hình này phù hợp khi deploy GitHub Pages dưới repository path tương ứng.
 
-### Build backend Java
+## Backend
 
 ```bash
 cd backend-java/movie-recommendation
 ./mvnw clean package -DskipTests
 ```
 
-Windows PowerShell:
-
-```powershell
-cd backend-java/movie-recommendation
-.\mvnw.cmd clean package -DskipTests
-```
-
-File `.jar` sau build nằm trong:
+The compiled JAR file is located in:
 
 ```text
-backend-java/movie-recommendation/target/
+target/
 ```
 
-### Deploy Render cho backend Java
 
-Thiết lập khuyến nghị:
+
+## Recommended Render Configuration
+
+**Root Directory**
 
 ```text
-Root Directory: backend-java/movie-recommendation
-Build Command: ./mvnw clean package -DskipTests
-Start Command: java -jar target/movie-recommendation-0.0.1-SNAPSHOT.jar
+backend-java/movie-recommendation
 ```
 
-Biến môi trường cần có trên Render:
+**Build Command**
 
-```env
-PORT=10000
-SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:<port>/<database>?sslmode=require
-SPRING_DATASOURCE_USERNAME=<username>
-SPRING_DATASOURCE_PASSWORD=<password>
-JWT_SECRET=<base64-secret>
-CORS_ALLOWED_ORIGIN_PATTERNS=https://your-frontend-domain.com,https://*.github.io,https://*.vercel.app,https://*.onrender.com
-TMDB_ACCESS_TOKEN=<tmdb-access-token>
-FLYWAY_ENABLED=true
-APP_DATA_LOADER_ENABLED=false
+```text
+./mvnw clean package -DskipTests
 ```
 
-## Ghi chú phát triển
+**Start Command**
 
-- Frontend gọi API qua `FE/src/lib/api.ts`; mọi endpoint được nối với `/api`.
-- Các request cần đăng nhập sẽ tự gắn header `Authorization: Bearer <token>`.
-- Khi access token hết hạn, frontend gọi `/api/auth/refresh` bằng refresh token.
-- Demo login `admin/admin123` đang được mock trong `FE/src/services/authService.ts`; không dùng cơ chế này cho production.
-- Nếu đổi domain frontend, cần cập nhật `CORS_ALLOWED_ORIGIN_PATTERNS`.
-- Nếu đổi backend URL, cần cập nhật `VITE_API_BASE_URL` trước khi build frontend.
-- Không đưa `.env`, database password, JWT secret hoặc TMDB token thật vào commit.
+```text
+java -jar target/movie-recommendation-0.0.1-SNAPSHOT.jar
+```
+
+
+
+# 📝 Development Notes
+
+* The frontend communicates with the backend through `FE/src/lib/api.ts`.
+* Protected endpoints automatically include the JWT access token.
+* Expired access tokens are refreshed transparently using the refresh token endpoint.
+* Update `CORS_ALLOWED_ORIGIN_PATTERNS` when deploying to a new frontend domain.
+* Configure `VITE_API_BASE_URL` before building the frontend.
+* Never commit `.env` files, database credentials, JWT secrets, or TMDB API tokens.
+
+
+
+# 👥 Contributors
+
+University of Information Technology (UIT) – VNU-HCM
+
+| Student ID   | Name         | Responsibilities                                   |
+| ------ | -------- | -------------- |
+| 23521021 | Hồ Như Hồng Ngọc | Backend |
+| 23521563 | Đinh Bảo Thy | Frontend |
+| 23521822 | Nguyễn Đàm Vương  | Database & Recommendation System |
+
+
+
+# 📄 License
+
+This project was developed as an academic course project at the University of Information Technology (UIT), VNU-HCM.
+All rights are reserved by the original project contributors.
